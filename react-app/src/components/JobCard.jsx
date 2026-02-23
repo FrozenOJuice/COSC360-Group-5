@@ -1,4 +1,4 @@
-import "../styles/JobCard.css";
+import "../styles/JobCard.css"
 
 function JobCard({ title, company, jobType, salary }) {
   return (
