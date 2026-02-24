@@ -1,6 +1,7 @@
 import Navbar from './components/Navbar';
-import JobCard from './components/JobCard'
+import JobCard from './components/JobCard';
 import Comment from './components/Comment';
+import Candidate from './components/Candidate';
 
 function App() {
   return (
@@ -19,6 +20,10 @@ function App() {
       <br/>
       
       <Comment/>
+
+      <br/>
+
+      <Candidate/>
     </>
   );
 }
