@@ -1,11 +1,31 @@
 import User from "../models/User.js";
 
-export async function findByEmail(email) {
-    return User.findOne({ email });
+export async function findByEmail(email, options = {}) {
+    const query = User.findOne({ email });
+
+    if (options.includePassword) {
+        query.select("+password");
+    }
+
+    if (options.includeRefreshTokenHash) {
+        query.select("+refreshTokenHash");
+    }
+
+    return query.exec();
 }
 
-export async function findById(userId) {
-    return User.findById(userId);
+export async function findById(userId, options = {}) {
+    const query = User.findById(userId);
+
+    if (options.includePassword) {
+        query.select("+password");
+    }
+
+    if (options.includeRefreshTokenHash) {
+        query.select("+refreshTokenHash");
+    }
+
+    return query.exec();
 }
 
 export async function createUser(userData) {
