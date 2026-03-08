@@ -1,3 +1,22 @@
+const STATUS_BY_CODE = Object.freeze({
+    INVALID_JSON: 400,
+    INVALID_REQUEST: 400,
+    VALIDATION_ERROR: 400,
+    MISSING_USER_ID: 400,
+    INVALID_TOKEN_PAYLOAD: 400,
+    UNAUTHORIZED: 401,
+    INVALID_CREDENTIALS: 401,
+    MISSING_ACCESS_TOKEN: 401,
+    INVALID_ACCESS_TOKEN: 401,
+    MISSING_REFRESH_TOKEN: 401,
+    INVALID_REFRESH_TOKEN: 401,
+    ROLE_NOT_ALLOWED: 403,
+    NOT_FOUND: 404,
+    USER_NOT_FOUND: 404,
+    EMAIL_ALREADY_IN_USE: 409,
+    DUPLICATE_KEY: 409,
+});
+
 export function errorHandler(err, req, res, next) {
     if (err && err.type === "entity.parse.failed") {
         err.status = 400;
@@ -36,9 +55,15 @@ export function errorHandler(err, req, res, next) {
 function errorResponse(err) {
     err = err || {};
 
-    let status = 500;
+    let status;
     const rawStatus = parseInt(err.statusCode || err.status, 10);
-    if (rawStatus >= 400 && rawStatus <= 599) status = rawStatus;
+    if (rawStatus >= 400 && rawStatus <= 599) {
+        status = rawStatus;
+    } else if (err.code && STATUS_BY_CODE[err.code]) {
+        status = STATUS_BY_CODE[err.code];
+    } else {
+        status = 500;
+    }
 
     let code = "INTERNAL_SERVER_ERROR";
     if (err.code) code = err.code;
