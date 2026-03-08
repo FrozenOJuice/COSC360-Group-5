@@ -3,9 +3,11 @@ import { hashRefreshToken, signAccessToken, signRefreshToken, verifyRefreshToken
 import { httpError } from "../utils/httpError.js";
 
 export async function registerUser(payload) {
-    let { name, email, password, role } = payload;
-    name = name.trim();
-    email = email.trim().toLowerCase();
+    const safePayload = payload || {};
+    const { name: rawName, email: rawEmail, password: rawPassword, role } = safePayload;
+    const name = typeof rawName === "string" ? rawName.trim() : "";
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+    const password = typeof rawPassword === "string" ? rawPassword : "";
 
     if (!name || !email || !password) {
         throw httpError(400, "INVALID_REQUEST", "Name, email, and password are required");
@@ -40,8 +42,10 @@ export async function registerUser(payload) {
 }
 
 export async function loginUser(payload) {
-    let { email, password } = payload;
-    email = email.trim().toLowerCase();
+    const safePayload = payload || {};
+    const { email: rawEmail, password: rawPassword } = safePayload;
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+    const password = typeof rawPassword === "string" ? rawPassword : "";
 
     if (!email || !password) {
         throw httpError(400, "INVALID_CREDENTIALS", "Email and password are required");

@@ -5,6 +5,28 @@ export function errorHandler(err, req, res, next) {
         err.message = "Invalid JSON format";
     }
 
+    if (err && !err.status && !err.statusCode && err.name === "ValidationError") {
+        err.status = 400;
+        err.code = "VALIDATION_ERROR";
+        err.message = "Validation failed";
+        err.details = Object.values(err.errors || {}).map((fieldError) => ({
+            field: fieldError.path,
+            message: fieldError.message,
+        }));
+    }
+
+    if (err && !err.status && !err.statusCode && err.name === "MongoServerError" && err.code === 11000) {
+        err.status = 409;
+        if (err.keyPattern && err.keyPattern.email) {
+            err.code = "EMAIL_ALREADY_IN_USE";
+            err.message = "Email is already registered";
+        } else {
+            err.code = "DUPLICATE_KEY";
+            err.message = "Resource already exists";
+        }
+        err.details = err.keyValue || err.details;
+    }
+
     const payload = errorResponse(err);
     res.status(payload.status).json(payload);
 }
@@ -26,7 +48,7 @@ function errorResponse(err) {
     const response = { status, code, message };
 
     if (err.details) response.details = err.details;
-    if (err.stack) response.stack = err.stack;
+    if (process.env.NODE_ENV !== "production" && err.stack) response.stack = err.stack;
 
     return response;
 }
