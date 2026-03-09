@@ -6,6 +6,7 @@ let server;
 
 const startServer = async () => {
     try {
+        await connectDB();
         server = app.listen(config.PORT, () => {
             console.log(`Server started on port ${config.PORT}.`);
         });

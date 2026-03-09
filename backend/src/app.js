@@ -24,32 +24,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRouter);
 
-app.get("/search", (req, res) => {
-    const term = (req.query.q || "").trim().toLowerCase();
-
-    const results = searchData.filter((item) => (
-        item.title.toLowerCase().includes(term) ||
-        item.company.toLowerCase().includes(term)
-    ));
-
-    res.status(200).json(results);
-});
-
-app.post("/login", (req,res)=>{
-    console.log("HIT /login", req.body);
-    const username = req.body.username;
-    const password = req.body.password;
-
-    console.log(username, password);
-
-    if(username === "admin" && password === "1234"){
-        res.json({message: "Login successful"});
-    }
-    else{
-        res.json({message: "Invalid credentials"});
-    }
-});
-
 app.use(notFound);
 app.use(errorHandler);
 

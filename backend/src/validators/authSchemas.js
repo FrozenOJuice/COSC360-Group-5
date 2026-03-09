@@ -1,0 +1,42 @@
+import { z } from "zod";
+import {
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MESSAGES,
+    PASSWORD_MIN_LENGTH,
+    PASSWORD_PATTERN,
+} from "./passwordRules.js";
+
+const requiredString = (fieldName) => z.string({
+    error: `${fieldName} is required`,
+}).trim().min(1, `${fieldName} is required`);
+
+const emailSchema = requiredString("Email")
+    .max(128, "Email must be at most 128 characters")
+    .email("Invalid email")
+    .transform((value) => value.toLowerCase());
+
+const registrationPasswordSchema = z.string({
+    error: "Password is required",
+})
+    .min(1, "Password is required")
+    .min(PASSWORD_MIN_LENGTH, PASSWORD_MESSAGES.MIN_LENGTH)
+    .max(PASSWORD_MAX_LENGTH, PASSWORD_MESSAGES.MAX_LENGTH)
+    .regex(PASSWORD_PATTERN, PASSWORD_MESSAGES.PATTERN);
+
+const loginPasswordSchema = z.string({
+    error: "Password is required",
+}).min(1, "Password is required");
+
+export const registerSchema = z.object({
+    name: requiredString("Name")
+        .min(2, "Name must be at least 2 characters")
+        .max(60, "Name must be at most 60 characters"),
+    email: emailSchema,
+    password: registrationPasswordSchema,
+    role: z.enum(["seeker", "employer"]).optional(),
+}).strict();
+
+export const loginSchema = z.object({
+    email: emailSchema,
+    password: loginPasswordSchema,
+}).strict();
