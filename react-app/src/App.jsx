@@ -1,4 +1,5 @@
 import Navbar from './components/Navbar';
+import SearchBar from './components/SearchBar';
 import JobCard from './components/JobCard';
 import Comment from './components/Comment';
 import LoginForm from './components/LoginForm'
@@ -7,6 +8,8 @@ function App() {
   return (
     <>
       <Navbar/>
+
+      <br/>
 
       <br/>
 
@@ -22,6 +25,8 @@ function App() {
       <Comment/>
 
       <LoginForm/>
+
+      <SearchBar/>
     </>
   );
 }
