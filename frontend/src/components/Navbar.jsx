@@ -12,11 +12,11 @@ function Navbar({ role }) {
         <nav className="buttons-right" aria-label="Primary navigation">
             {!role && (
                 <>
-                    <a href="#login" className="navbar-button navbar-button-muted">
-                        Login
-                    </a>
                     <a href="#register" className="navbar-button navbar-button-muted">
                         Register
+                    </a>
+                    <a href="#login" className="navbar-button navbar-button-muted">
+                        Login
                     </a>
                 </>
             )}
