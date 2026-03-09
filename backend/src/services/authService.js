@@ -109,12 +109,33 @@ export async function refreshSession(refreshToken) {
     };
 }
 
-export async function logoutSession(userId) {
-    if (!userId) {
-        throw appError("MISSING_USER_ID", "User id is required");
+export async function logoutSession(refreshToken) {
+    if (!refreshToken) {
+        return { success: true };
     }
 
-    await clearRefreshTokenHash(userId);
+    try {
+        const decoded = verifyRefreshToken(refreshToken);
+        const user = await findById(decoded.sub, { includeRefreshTokenHash: true });
+
+        if (!user || !user.refreshTokenHash) {
+            return { success: true };
+        }
+
+        const incomingHash = hashRefreshToken(refreshToken);
+        if (user.refreshTokenHash !== incomingHash) {
+            return { success: true };
+        }
+
+        await clearRefreshTokenHash(user.id);
+    } catch (error) {
+        if (error.isAppError && error.code === "INVALID_REFRESH_TOKEN") {
+            return { success: true };
+        }
+
+        throw error;
+    }
+
     return { success: true };
 }
 
