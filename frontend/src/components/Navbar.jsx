@@ -1,51 +1,32 @@
-import "../styles/Navbar.css"
+import "../styles/Navbar.css";
 
 function Navbar({ role }) {
-    const browseButtonText = (role=="employer") ? "View Listing" : "Browse Jobs";
-
-    const handleRedirect = (page) => {
-        // Redirect to page
-        alert(page);
-    };
+    const browseButtonText = role === "employer" ? "View Listings" : "Browse Jobs";
 
   return (
-    <div className="navbar">
-        <button onClick={() => handleRedirect("job board")} className="navbar-button">
+    <header className="navbar">
+        <a href="#top" className="brand-mark">
             Job Board
-        </button>
+        </a>
 
-        <span>
-            <div className="buttons-right">
-                {!role && (<div><button onClick={() => handleRedirect("register")} className="navbar-button" id="gray-button">
-                    Register
-                </button>
-                <button onClick={() => handleRedirect("login")} className="navbar-button" id="gray-button">
-                    Login
-                </button></div>)}
+        <nav className="buttons-right" aria-label="Primary navigation">
+            {!role && (
+                <>
+                    <a href="#login" className="navbar-button navbar-button-muted">
+                        Login
+                    </a>
+                    <a href="#register" className="navbar-button navbar-button-muted">
+                        Register
+                    </a>
+                </>
+            )}
 
-                {role && (<button onClick={() => handleRedirect("logout")} className="navbar-button" id="gray-button">
-                    Logout
-                </button>)}
-
-                {role=="jobSeeker" && (<button onClick={() => handleRedirect("profile")} className="navbar-button" id="gray-button">
-                    Profile
-                </button>)}
-
-
-                {role=="admin" && (<div><button onClick={() => handleRedirect("analytics")} className="navbar-button" id="gray-button">
-                    Analytics
-                </button>
-                <button onClick={() => handleRedirect("users")} className="navbar-button" id="gray-button">
-                    Users
-                </button></div>)}
-
-                <button onClick={() => handleRedirect("browse jobs")} className="navbar-button">
-                    {browseButtonText}
-                </button>
-            </div>
-        </span>
-    </div>
-  )
+            <a href="#jobs" className="navbar-button">
+                {browseButtonText}
+            </a>
+        </nav>
+    </header>
+  );
 }
 
-export default Navbar
+export default Navbar;

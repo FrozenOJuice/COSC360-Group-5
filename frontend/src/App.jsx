@@ -1,35 +1,14 @@
-import Navbar from './components/Navbar';
-import SearchBar from './components/SearchBar';
-import JobCard from './components/JobCard';
-import Comment from './components/Comment';
-import LoginForm from './components/LoginForm'
+import Navbar from "./components/Navbar";
+import HomePage from "./pages/HomePage";
+import "./styles/App.css";
 
 function App() {
   return (
-    <>
-      <Navbar/>
-
-      <br/>
-
-      <br/>
-
-      <JobCard
-        title="Software Developer"
-        company="Google"
-        jobType="Remote"
-        salary="$80,000 - $100,000"
-        />
-      
-      <br/>
-      
-      <Comment/>
-
-      <LoginForm/>
-
-      <SearchBar/>
-    </>
+    <div className="app-shell">
+      <Navbar />
+      <HomePage />
+    </div>
   );
 }
 
-
-export default App
+export default App;
