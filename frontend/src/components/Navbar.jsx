@@ -1,6 +1,5 @@
+import { apiFetch, buildApiUrl } from "../lib/api";
 import "../styles/Navbar.css";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 const NAV_BY_VARIANT = {
     public: [
@@ -33,9 +32,8 @@ function Navbar({ variant = "public", onLogout }) {
 
     async function handleMe() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+            const response = await apiFetch("/api/auth/me", {
                 method: "GET",
-                credentials: "include",
             });
 
             const data = await response.json();
@@ -50,7 +48,7 @@ function Navbar({ variant = "public", onLogout }) {
 
     async function handleLogout() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+            const response = await fetch(buildApiUrl("/api/auth/logout"), {
                 method: "POST",
                 credentials: "include",
             });

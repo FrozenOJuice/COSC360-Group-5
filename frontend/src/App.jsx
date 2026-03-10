@@ -5,14 +5,13 @@ import HomePage from "./pages/HomePage";
 import JobSeekerPage from "./pages/JobSeekerPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import { apiFetch } from "./lib/api";
 import {
   getCurrentPage,
   getLandingHash,
   getRequiredRoleForPage,
 } from "./lib/authRoutes";
 import "./styles/App.css";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 function App() {
   const [hash, setHash] = useState(() => window.location.hash);
@@ -29,11 +28,10 @@ function App() {
   useEffect(() => {
     let cancelled = false;
 
-    async function restoreSession() {
+    async function syncSession() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        const response = await apiFetch("/api/auth/me", {
           method: "GET",
-          credentials: "include",
         });
         const data = await response.json();
 
@@ -50,7 +48,7 @@ function App() {
       }
     }
 
-    restoreSession();
+    syncSession();
     return () => {
       cancelled = true;
     };
@@ -63,6 +61,35 @@ function App() {
     : currentPage === "employer" && authUser?.role === "employer"
       ? "employer"
       : "public";
+
+  useEffect(() => {
+    if (!authResolved || !requiredRole) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function validateProtectedSession() {
+      try {
+        const response = await apiFetch("/api/auth/me", {
+          method: "GET",
+        });
+        const data = await response.json();
+
+        if (cancelled) return;
+        setAuthUser(response.ok ? data.user : null);
+      } catch (error) {
+        if (!cancelled) {
+          setAuthUser(null);
+        }
+      }
+    }
+
+    validateProtectedSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [authResolved, currentPage, requiredRole]);
 
   useEffect(() => {
     if (!authResolved) return;
