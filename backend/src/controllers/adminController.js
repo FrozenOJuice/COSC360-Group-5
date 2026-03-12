@@ -2,7 +2,7 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { listAdminUsers, setManagedUserStatus } from "../services/adminService.js";
 
 export const getUsers = asyncHandler(async (req, res) => {
-    const result = await listAdminUsers(req.query);
+    const result = await listAdminUsers(req.validatedQuery ?? req.query);
     return res.status(200).json(result);
 });
 
