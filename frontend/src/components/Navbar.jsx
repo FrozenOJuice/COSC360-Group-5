@@ -9,7 +9,7 @@ const NAV_BY_VARIANT = {
     ],
     admin: [
         { href: "#admin-overview", label: "Overview", muted: false },
-        { href: "#admin-queue", label: "Queue", muted: true },
+        { href: "#admin-users", label: "Users", muted: true },
         { href: "#admin-priority", label: "Priority", muted: true },
         { label: "Logout", muted: true, action: "logout" },
     ],

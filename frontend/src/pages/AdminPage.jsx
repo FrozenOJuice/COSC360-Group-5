@@ -1,22 +1,5 @@
+import AdminUsersPanel from "../components/admin/AdminUsersPanel";
 import "../styles/AdminPage.css";
-
-const moderationQueue = [
-  {
-    title: "Employer account approvals",
-    count: "8 pending",
-    detail: "Review new companies that need manual verification before posting jobs.",
-  },
-  {
-    title: "Flagged job posts",
-    count: "3 flagged",
-    detail: "Check reports for inaccurate listings, expired roles, and duplicate posts.",
-  },
-  {
-    title: "Support escalations",
-    count: "5 open",
-    detail: "Follow up on payment, access, and account recovery requests from the queue.",
-  },
-];
 
 const platformStats = [
   { label: "Active employers", value: "126" },
@@ -38,8 +21,8 @@ function AdminPage() {
           </p>
 
           <div className="hero-actions">
-            <a className="hero-button hero-button-primary" href="#admin-queue">
-              Review Queue
+            <a className="hero-button hero-button-primary" href="#admin-users">
+              Manage Users
             </a>
             <a className="hero-button hero-button-secondary" href="#admin-overview">
               Platform Overview
@@ -76,23 +59,7 @@ function AdminPage() {
         ))}
       </section>
 
-      <section className="admin-workspace" id="admin-queue">
-        <div className="section-heading">
-          <p className="section-label">Operations Queue</p>
-          <h2>Work items that need admin attention</h2>
-        </div>
-
-        <div className="admin-queue-grid">
-          {moderationQueue.map((item) => (
-            <article key={item.title} className="admin-queue-card">
-              <p className="admin-queue-count">{item.count}</p>
-              <h3>{item.title}</h3>
-              <p>{item.detail}</p>
-              <button type="button">Open Queue</button>
-            </article>
-          ))}
-        </div>
-      </section>
+      <AdminUsersPanel />
     </main>
   );
 }
