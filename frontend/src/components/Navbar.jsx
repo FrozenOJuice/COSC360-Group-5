@@ -3,47 +3,38 @@ import "../styles/Navbar.css";
 
 const NAV_BY_VARIANT = {
     public: [
-        { label: "Me", muted: true, action: "me" },
         { href: "#register", label: "Register", muted: true },
         { href: "#login", label: "Login", muted: true },
         { href: "#jobs", label: "Browse Jobs", muted: false },
     ],
+    admin: [
+        { href: "#admin-overview", label: "Overview", muted: false },
+        { href: "#admin-queue", label: "Queue", muted: true },
+        { href: "#admin-priority", label: "Priority", muted: true },
+        { label: "Logout", muted: true, action: "logout" },
+    ],
     jobSeeker: [
         { href: "#job-seeker-jobs", label: "Browse Jobs", muted: false },
         { href: "#job-seeker-profile", label: "Profile", muted: true },
-        { label: "Me", muted: true, action: "me" },
         { label: "Logout", muted: true, action: "logout" },
     ],
     employer: [
         { href: "#employer-jobs", label: "Browse Jobs", muted: false },
         { href: "#employer-company", label: "Company", muted: true },
-        { label: "Me", muted: true, action: "me" },
         { label: "Logout", muted: true, action: "logout" },
     ],
 };
 
 function Navbar({ variant = "public" }) {
-  const { loading, logout, syncSession } = useAuth();
+  const { loading, logout } = useAuth();
   const links = NAV_BY_VARIANT[variant] || NAV_BY_VARIANT.public;
-  const brandHref = variant === "jobSeeker"
-    ? "#job-seeker"
-    : variant === "employer"
-      ? "#employer"
-      : "#top";
-
-  async function handleMe() {
-    const { data, ok } = await syncSession();
-
-    if (!ok) {
-      window.alert(data.message || "Could not load the current session");
-      return;
-    }
-
-    window.alert(JSON.stringify({
-      status: 200,
-      user: data.user ?? null,
-    }, null, 2));
-  }
+  const brandHref = variant === "admin"
+    ? "#admin"
+    : variant === "jobSeeker"
+      ? "#job-seeker"
+      : variant === "employer"
+        ? "#employer"
+        : "#top";
 
   async function handleLogout() {
     const { data, ok } = await logout();
@@ -64,11 +55,11 @@ function Navbar({ variant = "public" }) {
 
         <nav className="buttons-right" aria-label="Primary navigation">
             {links.map((link) => (
-                link.action === "me" || link.action === "logout" ? (
+                link.action === "logout" ? (
                     <button
                         key={`${variant}-${link.label}`}
                         type="button"
-                        onClick={link.action === "me" ? handleMe : handleLogout}
+                        onClick={handleLogout}
                         className={`navbar-button${link.muted ? " navbar-button-muted" : ""}`}
                         disabled={loading}
                     >

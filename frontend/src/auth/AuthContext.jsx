@@ -34,8 +34,11 @@ export function AuthProvider({ children }) {
   const requestIdRef = useRef(0);
   const isMountedRef = useRef(true);
   const syncSessionRef = useRef(null);
+  isMountedRef.current = true;
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     return () => {
       isMountedRef.current = false;
     };
