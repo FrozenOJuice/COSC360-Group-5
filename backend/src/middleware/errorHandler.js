@@ -35,6 +35,16 @@ export function errorHandler(err, req, res, next) {
         }));
     }
 
+    if (err && !err.status && !err.statusCode && err.name === "CastError") {
+        err.status = 400;
+        err.code = "INVALID_REQUEST";
+        err.message = "Invalid request parameter";
+        err.details = [{
+            field: err.path || "value",
+            message: `Invalid value: ${err.value}`,
+        }];
+    }
+
     if (err && !err.status && !err.statusCode && err.name === "MongoServerError" && err.code === 11000) {
         err.status = 409;
         if (err.keyPattern && err.keyPattern.email) {

@@ -28,8 +28,26 @@ export async function findById(userId, options = {}) {
     return query.exec();
 }
 
-export async function listUsers(filters = {}) {
-    return User.find(filters).exec();
+export async function listUsers(filters = {}, options = {}) {
+    const query = User.find(filters);
+
+    if (options.sort) {
+        query.sort(options.sort);
+    }
+
+    if (typeof options.skip === "number" && options.skip > 0) {
+        query.skip(options.skip);
+    }
+
+    if (typeof options.limit === "number" && options.limit > 0) {
+        query.limit(options.limit);
+    }
+
+    return query.exec();
+}
+
+export async function countUsers(filters = {}) {
+    return User.countDocuments(filters).exec();
 }
 
 export async function createUser(userData) {

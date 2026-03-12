@@ -1,19 +1,19 @@
 import { appError } from "../utils/appError.js";
 import { mapIssuesToDetails } from "./validationDetails.js";
 
-export function validateBody(schema) {
+export function validateParams(schema) {
     return (req, res, next) => {
-        const result = schema.safeParse(req.body);
+        const result = schema.safeParse(req.params);
 
         if (!result.success) {
             return next(appError(
                 "INVALID_REQUEST",
-                "Invalid request payload",
-                mapIssuesToDetails(result.error.issues, "body")
+                "Invalid route parameters",
+                mapIssuesToDetails(result.error.issues, "params")
             ));
         }
 
-        req.body = result.data;
+        req.params = result.data;
         next();
     };
 }

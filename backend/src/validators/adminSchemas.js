@@ -3,6 +3,7 @@ import { z } from "zod";
 const USER_ROLES = ["seeker", "employer", "admin"];
 const USER_STATUSES = ["active", "disabled"];
 const USER_SORT_FIELDS = ["name", "email", "role", "status"];
+const OBJECT_ID_PATTERN = /^[0-9a-fA-F]{24}$/;
 
 const emptyStringToUndefined = (value) => {
     if (typeof value !== "string") {
@@ -49,4 +50,10 @@ export const updateUserStatusSchema = z.object({
     status: z.enum(USER_STATUSES, {
         error: "Status must be active or disabled",
     }),
+}).strict();
+
+export const updateUserStatusParamsSchema = z.object({
+    id: z.string()
+        .trim()
+        .regex(OBJECT_ID_PATTERN, "User id must be a valid MongoDB ObjectId"),
 }).strict();

@@ -1,4 +1,5 @@
 import {
+    countUsers,
     clearRefreshTokenHash,
     findById,
     listUsers,
@@ -53,20 +54,6 @@ function buildUserFilters(options = {}) {
     return filters;
 }
 
-function compareUsers(left, right, sortBy, sortDirection) {
-    const leftValue = String(left[sortBy] || "");
-    const rightValue = String(right[sortBy] || "");
-    const comparison = leftValue.localeCompare(rightValue, undefined, {
-        sensitivity: "base",
-    });
-
-    if (comparison !== 0) {
-        return comparison * sortDirection;
-    }
-
-    return String(left.id).localeCompare(String(right.id));
-}
-
 export async function listAdminUsers(options = {}) {
     const filters = buildUserFilters(options);
     const page = toPositiveInt(options.page, 1);
@@ -74,18 +61,18 @@ export async function listAdminUsers(options = {}) {
     const sortBy = SORT_FIELDS.has(options.sortBy) ? options.sortBy : "name";
     const sortOrder = options.sortOrder === "desc" ? "desc" : "asc";
     const sortDirection = sortOrder === "desc" ? -1 : 1;
-
-    const users = await listUsers(filters);
-    const sortedUsers = [...users].sort((left, right) =>
-        compareUsers(left, right, sortBy, sortDirection)
-    );
-
-    const total = sortedUsers.length;
     const start = (page - 1) * limit;
-    const pagedUsers = sortedUsers.slice(start, start + limit);
+    const sort = {
+        [sortBy]: sortDirection,
+        _id: 1,
+    };
+    const [users, total] = await Promise.all([
+        listUsers(filters, { sort, skip: start, limit }),
+        countUsers(filters),
+    ]);
 
     return {
-        users: pagedUsers.map(normalizeUser),
+        users: users.map(normalizeUser),
         pagination: {
             page,
             limit,

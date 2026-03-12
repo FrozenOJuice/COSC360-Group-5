@@ -1,20 +1,5 @@
 import { appError } from "../utils/appError.js";
-
-function mapIssuesToDetails(issues) {
-    return issues.flatMap((issue) => {
-        if (issue.code === "unrecognized_keys" && Array.isArray(issue.keys)) {
-            return issue.keys.map((key) => ({
-                field: key,
-                message: "Unknown field",
-            }));
-        }
-
-        return [{
-            field: issue.path.length ? issue.path.join(".") : "query",
-            message: issue.message,
-        }];
-    });
-}
+import { mapIssuesToDetails } from "./validationDetails.js";
 
 export function validateQuery(schema) {
     return (req, res, next) => {
@@ -24,7 +9,7 @@ export function validateQuery(schema) {
             return next(appError(
                 "INVALID_REQUEST",
                 "Invalid query parameters",
-                mapIssuesToDetails(result.error.issues)
+                mapIssuesToDetails(result.error.issues, "query")
             ));
         }
 

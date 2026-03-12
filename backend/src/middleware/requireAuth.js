@@ -20,7 +20,6 @@ export async function requireAuth(req, res, next) {
             userId: user.id,
             role: user.role,
         };
-        req.user = user;
         next();
     } catch (error) {
         next(error);
