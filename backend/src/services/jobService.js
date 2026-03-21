@@ -14,7 +14,7 @@ function toPositiveInt(value, fallback) {
 
 function normalizeJob(job) {
     return {
-        id: job.id,
+        id: job.id ?? String(job._id),
         title: job.title,
         category: job.category,
         country: job.country,
@@ -57,6 +57,10 @@ function buildJobFilters(options = {}) {
 
 export async function listBoardJobs(options = {}) {
     const filters = buildJobFilters(options);
+    const search = typeof options.search === "string" ? options.search.trim() : "";
+    const category = typeof options.category === "string" ? options.category.trim() : "";
+    const country = typeof options.country === "string" ? options.country.trim() : "";
+    const currency = typeof options.currency === "string" ? options.currency.trim().toUpperCase() : "";
     const page = toPositiveInt(options.page, 1);
     const limit = toPositiveInt(options.limit, 25);
     const sortBy = SORT_FIELDS.has(options.sortBy) ? options.sortBy : "title";
