@@ -1,8 +1,11 @@
 import {
+    createJob,
+    deleteJobById,
     countJobs,
     findJobById,
     listDistinctJobFieldValues,
     listJobs,
+    updateJobById,
 } from "../repositories/jobRepository.js";
 import { toJobDto } from "../dto/jobDto.js";
 import { normalizeTextSearch, toPositiveInt } from "./queryUtils.js";
@@ -50,8 +53,31 @@ function buildJobFilters(options = {}) {
     };
 }
 
-export async function listBoardJobs(options = {}) {
-    const { filters, normalizedFilters } = buildJobFilters(options);
+function buildJobListResult(jobs, total, {
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    filters,
+    includeEmployerUserId = false,
+}) {
+    return {
+        jobs: jobs.map((job) => toJobDto(job, { includeEmployerUserId })),
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / limit),
+        },
+        sort: {
+            by: sortBy,
+            order: sortOrder,
+        },
+        filters,
+    };
+}
+
+async function listJobsForFilters(filters, normalizedFilters, options = {}, dtoOptions = {}) {
     const { search, category, country, currency } = normalizedFilters;
     const page = toPositiveInt(options.page, 1);
     const limit = toPositiveInt(options.limit, 25);
@@ -69,25 +95,60 @@ export async function listBoardJobs(options = {}) {
         countJobs(filters),
     ]);
 
-    return {
-        jobs: jobs.map(toJobDto),
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: total === 0 ? 0 : Math.ceil(total / limit),
-        },
-        sort: {
-            by: sortBy,
-            order: sortOrder,
-        },
+    return buildJobListResult(jobs, total, {
+        page,
+        limit,
+        sortBy,
+        sortOrder,
         filters: {
             search,
             category,
             country,
             currency,
         },
+        includeEmployerUserId: dtoOptions.includeEmployerUserId,
+    });
+}
+
+function buildManagedJobPayload(payload = {}) {
+    const nextPayload = {
+        title: payload.title,
+        category: payload.category,
+        country: payload.country,
+        salary: payload.salary,
+        currency: payload.currency,
+        exchangeRate: payload.exchangeRate,
     };
+
+    return Object.fromEntries(
+        Object.entries(nextPayload).filter(([, value]) => value !== undefined)
+    );
+}
+
+async function getManagedJob(jobId, employerUserId) {
+    if (!jobId) {
+        throw appError("INVALID_REQUEST", "Job id is required");
+    }
+
+    if (!employerUserId) {
+        throw appError("UNAUTHORIZED", "Not authenticated");
+    }
+
+    const job = await findJobById(jobId);
+    if (!job) {
+        throw appError("NOT_FOUND", "Job not found");
+    }
+
+    if (String(job.employerUserId) !== String(employerUserId)) {
+        throw appError("ROLE_NOT_ALLOWED", "You do not have permission to manage this job");
+    }
+
+    return job;
+}
+
+export async function listBoardJobs(options = {}) {
+    const { filters, normalizedFilters } = buildJobFilters(options);
+    return listJobsForFilters(filters, normalizedFilters, options);
 }
 
 export async function getBoardJob(jobId) {
@@ -127,5 +188,60 @@ export async function getBoardJobOptions() {
         categories: normalizeOptionValues(categories),
         countries: normalizeOptionValues(countries),
         currencies: normalizeOptionValues(currencies, (value) => value.toUpperCase()),
+    };
+}
+
+export async function listEmployerJobs(employerUserId, options = {}) {
+    if (!employerUserId) {
+        throw appError("UNAUTHORIZED", "Not authenticated");
+    }
+
+    const { filters, normalizedFilters } = buildJobFilters(options);
+    filters.employerUserId = employerUserId;
+
+    return listJobsForFilters(filters, normalizedFilters, options, {
+        includeEmployerUserId: true,
+    });
+}
+
+export async function createEmployerJob(employerUserId, payload = {}) {
+    if (!employerUserId) {
+        throw appError("UNAUTHORIZED", "Not authenticated");
+    }
+
+    const job = await createJob({
+        employerUserId,
+        ...buildManagedJobPayload(payload),
+    });
+
+    return {
+        job: toJobDto(job, { includeEmployerUserId: true }),
+    };
+}
+
+export async function updateEmployerJob(employerUserId, jobId, payload = {}) {
+    await getManagedJob(jobId, employerUserId);
+
+    const job = await updateJobById(jobId, buildManagedJobPayload(payload));
+    if (!job) {
+        throw appError("NOT_FOUND", "Job not found");
+    }
+
+    return {
+        job: toJobDto(job, { includeEmployerUserId: true }),
+    };
+}
+
+export async function deleteEmployerJob(employerUserId, jobId) {
+    await getManagedJob(jobId, employerUserId);
+
+    const job = await deleteJobById(jobId);
+    if (!job) {
+        throw appError("NOT_FOUND", "Job not found");
+    }
+
+    return {
+        deleted: true,
+        job: toJobDto(job, { includeEmployerUserId: true }),
     };
 }

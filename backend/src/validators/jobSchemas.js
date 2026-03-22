@@ -7,6 +7,32 @@ import {
 } from "./schemaUtils.js";
 
 const JOB_SORT_FIELDS = ["title", "category", "country", "salary", "currency", "exchangeRate"];
+const requiredString = (fieldName) => z.string({
+    error: `${fieldName} is required`,
+}).trim().min(1, `${fieldName} is required`);
+const numberField = (fieldName) => z.coerce.number({
+    error: `${fieldName} is required`,
+});
+
+const createJobShape = {
+    title: requiredString("Title")
+        .min(2, "Title must be at least 2 characters")
+        .max(120, "Title must be at most 120 characters"),
+    category: requiredString("Category")
+        .min(2, "Category must be at least 2 characters")
+        .max(120, "Category must be at most 120 characters"),
+    country: requiredString("Country")
+        .min(2, "Country must be at least 2 characters")
+        .max(80, "Country must be at most 80 characters"),
+    salary: numberField("Salary")
+        .min(0, "Salary must be at least 0"),
+    currency: requiredString("Currency")
+        .min(2, "Currency must be at least 2 characters")
+        .max(10, "Currency must be at most 10 characters")
+        .transform((value) => value.toUpperCase()),
+    exchangeRate: numberField("Exchange rate")
+        .min(0, "Exchange rate must be at least 0"),
+};
 
 export const listJobsQuerySchema = z.object({
     search: optionalTrimmedString(
@@ -36,3 +62,17 @@ export const listJobsQuerySchema = z.object({
 export const jobParamsSchema = z.object({
     id: buildObjectIdSchema("Job id"),
 }).strict();
+
+export const createJobSchema = z.object(createJobShape).strict();
+
+export const updateJobSchema = z.object({
+    title: createJobShape.title.optional(),
+    category: createJobShape.category.optional(),
+    country: createJobShape.country.optional(),
+    salary: createJobShape.salary.optional(),
+    currency: createJobShape.currency.optional(),
+    exchangeRate: createJobShape.exchangeRate.optional(),
+}).strict().refine(
+    (value) => Object.keys(value).length > 0,
+    "At least one field is required"
+);

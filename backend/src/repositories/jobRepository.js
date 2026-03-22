@@ -38,6 +38,13 @@ export async function createJob(jobData) {
     return Job.create(jobData);
 }
 
-export async function saveJob(job) {
-    return job.save();
+export async function updateJobById(jobId, updateData) {
+    return Job.findByIdAndUpdate(jobId, updateData, {
+        new: true,
+        runValidators: true,
+    }).exec();
+}
+
+export async function deleteJobById(jobId) {
+    return Job.findByIdAndDelete(jobId).exec();
 }

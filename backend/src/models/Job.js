@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const jobSchema = new mongoose.Schema(
     {
+        employerUserId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+            index: true,
+        },
         title: {
             type: String,
             required: true,
@@ -65,6 +71,7 @@ jobSchema.index({ country: 1, _id: 1 }, { name: "job_country_sort" });
 jobSchema.index({ salary: 1, _id: 1 }, { name: "job_salary_sort" });
 jobSchema.index({ currency: 1, _id: 1 }, { name: "job_currency_sort" });
 jobSchema.index({ exchangeRate: 1, _id: 1 }, { name: "job_exchange_rate_sort" });
+jobSchema.index({ employerUserId: 1, _id: 1 }, { name: "job_employer_sort" });
 
 const Job = mongoose.models.Job || mongoose.model("Job", jobSchema);
 export default Job;
