@@ -6,11 +6,13 @@ import EmployerPage from "./pages/EmployerPage";
 import HomePage from "./pages/HomePage";
 import JobSeekerPage from "./pages/JobSeekerPage";
 import JobSeekerProfilePage from "./pages/JobSeekerProfilePage";
+import JobDetailsPage from "./pages/JobDetailsPage";
 import JobsPage from "./pages/JobsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import {
   getCurrentPage,
+  getJobIdFromHash,
   getLandingHash,
   getRequiredRoleForPage,
 } from "./lib/authRoutes";
@@ -28,6 +30,7 @@ function App() {
   }, []);
 
   const currentPage = getCurrentPage(hash);
+  const currentJobId = getJobIdFromHash(hash);
   const requiredRole = getRequiredRoleForPage(currentPage);
   const navbarVariant = requiredRole === "admin" && authUser?.role === "admin"
     ? "admin"
@@ -77,6 +80,7 @@ function App() {
       {currentPage === "admin" && shouldShowProtectedPage ? <AdminPage /> : null}
       {currentPage === "employer" && shouldShowProtectedPage ? <EmployerPage /> : null}
       {currentPage === "jobs" ? <JobsPage /> : null}
+      {currentPage === "jobDetails" ? <JobDetailsPage jobId={currentJobId} /> : null}
       {currentPage === "jobSeeker" && shouldShowProtectedPage ? <JobSeekerPage /> : null}
       {currentPage === "jobSeekerProfile" && shouldShowProtectedPage ? <JobSeekerProfilePage /> : null}
       {currentPage === "login" ? <LoginPage /> : null}

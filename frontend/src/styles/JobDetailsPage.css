@@ -1,0 +1,87 @@
+.job-details-page {
+  padding: 78px 0 72px;
+}
+
+.job-details-back {
+  display: inline-flex;
+  margin-bottom: 18px;
+  color: #3163d4;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.job-details-back:hover {
+  text-decoration: underline;
+}
+
+.job-details-card h1,
+.job-details-subtitle,
+.job-details-fields dt,
+.job-details-fields dd {
+  margin: 0;
+}
+
+.job-details-card {
+  max-width: 860px;
+  padding: 28px;
+  border: 1px solid #d6dfeb;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(245, 249, 255, 0.78));
+  box-shadow: 0 18px 36px rgba(24, 33, 47, 0.08);
+}
+
+.job-details-card h1 {
+  max-width: 760px;
+  margin-top: 6px;
+  font-size: clamp(2.5rem, 5.6vw, 4.4rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.job-details-subtitle {
+  margin-top: 12px;
+  line-height: 1.7;
+  color: #55657b;
+}
+
+.job-details-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 30px;
+}
+
+.job-details-fields div {
+  padding: 18px 20px;
+  border: 1px solid #d6dfeb;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.job-details-fields dt {
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #3163d4;
+}
+
+.job-details-fields dd {
+  color: #18212f;
+  font-size: 1.12rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .job-details-page {
+    padding-top: 42px;
+  }
+
+  .job-details-fields {
+    grid-template-columns: 1fr;
+  }
+}

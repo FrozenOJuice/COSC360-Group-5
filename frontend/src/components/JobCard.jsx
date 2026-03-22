@@ -11,6 +11,7 @@ function formatSalary(value, currency) {
 }
 
 function JobCard({
+  jobId,
   title,
   company,
   category,
@@ -25,15 +26,32 @@ function JobCard({
   const salaryLabel = typeof salary === "number"
     ? formatSalary(salary, currency)
     : salary;
+  const actionHref = jobId ? `#jobs/${jobId}` : "";
 
-  return (
-    <div className="job-card">
+  const cardContent = (
+    <>
       <p className="job-card-company">{eyebrow}</p>
       <h3>{title}</h3>
       {meta ? <p className="job-card-meta">{meta}</p> : null}
       {salaryLabel ? <p className="job-card-salary">{salaryLabel}</p> : null}
       {summary ? <p className="job-card-summary">{summary}</p> : null}
-      <button type="button">View Details</button>
+      {actionHref ? (
+        <span className="job-card-action">View Details</span>
+      ) : (
+        <button type="button" disabled>
+          View Details
+        </button>
+      )}
+    </>
+  );
+
+  return actionHref ? (
+    <a className="job-card job-card-link" href={actionHref}>
+      {cardContent}
+    </a>
+  ) : (
+    <div className="job-card">
+      {cardContent}
     </div>
   );
 }

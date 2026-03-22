@@ -79,6 +79,7 @@ function HomePage() {
               {jobs.map((job) => (
                 <JobCard
                   key={job.id}
+                  jobId={job.id}
                   title={job.title}
                   category={job.category}
                   country={job.country}
