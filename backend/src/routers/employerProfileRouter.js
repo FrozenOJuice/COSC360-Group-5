@@ -1,7 +1,9 @@
 import express from "express";
 import {
     getEmployerProfileByUserId,
+    getEmployerProfileLogoByUserId,
     getSelfEmployerProfile,
+    getSelfEmployerProfileLogo,
     uploadSelfEmployerProfileLogo,
     updateSelfEmployerProfile,
 } from "../controllers/employerProfileController.js";
@@ -15,6 +17,7 @@ import { profileUserParamsSchema, updateEmployerProfileSchema } from "../validat
 
 const router = express.Router();
 
+router.get("/me/logo", requireAuth, requireRole("employer"), getSelfEmployerProfileLogo);
 router.get("/me", requireAuth, requireRole("employer"), getSelfEmployerProfile);
 router.put(
     "/me",
@@ -30,6 +33,7 @@ router.post(
     uploadEmployerProfileLogo,
     uploadSelfEmployerProfileLogo
 );
+router.get("/:userId/logo", attachAuth, validateParams(profileUserParamsSchema), getEmployerProfileLogoByUserId);
 router.get("/:userId", attachAuth, validateParams(profileUserParamsSchema), getEmployerProfileByUserId);
 
 export default router;

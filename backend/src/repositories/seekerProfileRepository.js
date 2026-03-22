@@ -3,6 +3,10 @@ import SeekerProfile from "../models/SeekerProfile.js";
 export async function findSeekerProfileByUserId(userId, options = {}) {
     const query = SeekerProfile.findOne({ userId });
 
+    if (options.includeImageData) {
+        query.select("+profilePictureData +profilePictureContentType");
+    }
+
     if (options.session) {
         query.session(options.session);
     }

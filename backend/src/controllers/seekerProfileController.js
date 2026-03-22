@@ -1,10 +1,12 @@
 import {
     getCurrentSeekerProfile,
+    getCurrentSeekerProfilePicture,
+    getSeekerProfilePicture,
     getVisibleSeekerProfile,
+    setCurrentSeekerProfilePicture,
     updateCurrentSeekerProfile,
 } from "../services/seekerProfileService.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { getUploadedProfileImagePath } from "../middleware/profileImageUpload.js";
 
 export const getSelfSeekerProfile = asyncHandler(async (req, res) => {
     const profile = await getCurrentSeekerProfile(req.auth?.userId);
@@ -17,13 +19,23 @@ export const updateSelfSeekerProfile = asyncHandler(async (req, res) => {
 });
 
 export const uploadSelfSeekerProfilePicture = asyncHandler(async (req, res) => {
-    const profile = await updateCurrentSeekerProfile(req.auth?.userId, {
-        profilePicture: getUploadedProfileImagePath(req.file),
-    });
+    const profile = await setCurrentSeekerProfilePicture(req.auth?.userId, req.file);
     res.status(200).json({ success: true, data: profile });
+});
+
+export const getSelfSeekerProfilePicture = asyncHandler(async (req, res) => {
+    const picture = await getCurrentSeekerProfilePicture(req.auth?.userId);
+    res.set("Content-Type", picture.contentType);
+    res.status(200).send(picture.data);
 });
 
 export const getSeekerProfileByUserId = asyncHandler(async (req, res) => {
     const profile = await getVisibleSeekerProfile(req.params?.userId, req.auth);
     res.status(200).json({ success: true, data: profile });
+});
+
+export const getSeekerProfilePictureByUserId = asyncHandler(async (req, res) => {
+    const picture = await getSeekerProfilePicture(req.params?.userId, req.auth);
+    res.set("Content-Type", picture.contentType);
+    res.status(200).send(picture.data);
 });

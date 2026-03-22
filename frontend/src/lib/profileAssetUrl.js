@@ -5,7 +5,7 @@ export function resolveProfileAssetUrl(value, fallback = "/default-profile.png")
     return fallback;
   }
 
-  if (value.startsWith("/uploads/")) {
+  if (value.startsWith("/uploads/") || value.startsWith("/api/")) {
     return buildApiUrl(value);
   }
 

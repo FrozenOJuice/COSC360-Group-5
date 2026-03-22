@@ -40,6 +40,19 @@ const seekerProfileSchema = new mongoose.Schema({
             message: "Profile picture URL must start with /, http://, or https://",
         },
     },
+    profilePictureData: {
+        type: Buffer,
+        select: false,
+    },
+    profilePictureContentType: {
+        type: String,
+        trim: true,
+        select: false,
+    },
+    hasUploadedProfilePicture: {
+        type: Boolean,
+        default: false,
+    },
     phone: {
         type: String,
         trim: true,

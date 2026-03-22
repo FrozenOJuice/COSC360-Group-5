@@ -1,7 +1,9 @@
 import express from "express";
 import {
     getSeekerProfileByUserId,
+    getSeekerProfilePictureByUserId,
     getSelfSeekerProfile,
+    getSelfSeekerProfilePicture,
     uploadSelfSeekerProfilePicture,
     updateSelfSeekerProfile,
 } from "../controllers/seekerProfileController.js";
@@ -15,6 +17,7 @@ import { profileUserParamsSchema, updateSeekerProfileSchema } from "../validator
 
 const router = express.Router();
 
+router.get("/me/picture", requireAuth, requireRole("seeker"), getSelfSeekerProfilePicture);
 router.get("/me", requireAuth, requireRole("seeker"), getSelfSeekerProfile);
 router.put(
     "/me",
@@ -30,6 +33,7 @@ router.post(
     uploadSeekerProfilePicture,
     uploadSelfSeekerProfilePicture
 );
+router.get("/:userId/picture", attachAuth, validateParams(profileUserParamsSchema), getSeekerProfilePictureByUserId);
 router.get("/:userId", attachAuth, validateParams(profileUserParamsSchema), getSeekerProfileByUserId);
 
 export default router;

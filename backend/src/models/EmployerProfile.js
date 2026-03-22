@@ -44,6 +44,19 @@ const employerProfileSchema = new mongoose.Schema({
             message: "Logo URL must start with /, http://, or https://",
         },
     },
+    logoData: {
+        type: Buffer,
+        select: false,
+    },
+    logoContentType: {
+        type: String,
+        trim: true,
+        select: false,
+    },
+    hasUploadedLogo: {
+        type: Boolean,
+        default: false,
+    },
     location: {
         type: String,
         trim: true,

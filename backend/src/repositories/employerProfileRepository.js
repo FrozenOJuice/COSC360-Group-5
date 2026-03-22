@@ -3,6 +3,10 @@ import EmployerProfile from "../models/EmployerProfile.js";
 export async function findEmployerProfileByUserId(userId, options = {}) {
     const query = EmployerProfile.findOne({ userId });
 
+    if (options.includeImageData) {
+        query.select("+logoData +logoContentType");
+    }
+
     if (options.session) {
         query.session(options.session);
     }

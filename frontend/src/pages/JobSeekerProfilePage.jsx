@@ -415,6 +415,25 @@ function JobSeekerProfilePage() {
             alt="Profile Picture"
             className="profile-image"
           />
+          {isEditing ? (
+            <div className="profile-media-stack">
+              <label className="profile-field">
+                <span>Profile Picture</span>
+                <input
+                  className={getControlClass('profile-file-input', 'profilePicture')}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleProfilePictureUpload}
+                  disabled={isUploadingImage}
+                />
+              </label>
+              <p className="profile-helper-copy profile-media-helper">
+                JPG, PNG, GIF, or WebP only, up to 5 MB.
+              </p>
+              {isUploadingImage ? <p className="profile-helper-copy profile-media-helper">Uploading image...</p> : null}
+              {fieldErrors.profilePicture ? <p className="profile-field-error">{fieldErrors.profilePicture}</p> : null}
+            </div>
+          ) : null}
           <div className="profile-visibility-card">
             <div className="profile-visibility-header">
               <p className="profile-visibility-label">Visibility</p>
@@ -445,31 +464,6 @@ function JobSeekerProfilePage() {
             <p><strong>Email:</strong> {user?.email || 'N/A'}</p>
             {isEditing ? (
               <>
-                <label className="profile-field">
-                  <span>Upload Profile Picture</span>
-                  <input
-                    className={getControlClass('profile-file-input', 'profilePicture')}
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
-                    onChange={handleProfilePictureUpload}
-                    disabled={isUploadingImage}
-                  />
-                </label>
-                <p className="profile-helper-copy">
-                  Upload a JPG, PNG, GIF, or WebP image up to 5 MB.
-                </p>
-                {isUploadingImage ? <p className="profile-helper-copy">Uploading image...</p> : null}
-                <label className="profile-field">
-                  <span>Profile Picture URL</span>
-                  <input
-                    className={getControlClass('profile-input', 'profilePicture')}
-                    type="text"
-                    name="profilePicture"
-                    value={draft.profilePicture}
-                    onChange={handleDraftChange}
-                  />
-                </label>
-                {fieldErrors.profilePicture ? <p className="profile-field-error">{fieldErrors.profilePicture}</p> : null}
                 <label className="profile-field">
                   <span>Phone Number</span>
                   <input

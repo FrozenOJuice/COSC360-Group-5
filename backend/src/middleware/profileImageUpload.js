@@ -1,15 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
-import { fileURLToPath } from "node:url";
 import multer from "multer";
 import { appError } from "../utils/appError.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const profileUploadsDir = path.resolve(__dirname, "../../uploads/profile-images");
-
-fs.mkdirSync(profileUploadsDir, { recursive: true });
 
 const IMAGE_EXTENSION_BY_TYPE = Object.freeze({
     "image/jpeg": ".jpg",
@@ -26,22 +16,8 @@ function createUploadError(field, message) {
 }
 
 function createImageUploadMiddleware({ fieldName, filenamePrefix }) {
-    const storage = multer.diskStorage({
-        destination: (_req, _file, callback) => {
-            callback(null, profileUploadsDir);
-        },
-        filename: (req, file, callback) => {
-            const extension = IMAGE_EXTENSION_BY_TYPE[file.mimetype]
-                || path.extname(file.originalname || "").toLowerCase()
-                || ".bin";
-            const safeUserId = String(req.auth?.userId || "user").replace(/[^a-zA-Z0-9_-]/g, "");
-
-            callback(null, `${filenamePrefix}-${safeUserId}-${Date.now()}-${randomUUID()}${extension}`);
-        },
-    });
-
     const upload = multer({
-        storage,
+        storage: multer.memoryStorage(),
         limits: {
             fileSize: 5 * 1024 * 1024,
         },
@@ -80,16 +56,10 @@ function createImageUploadMiddleware({ fieldName, filenamePrefix }) {
     };
 }
 
-export function getUploadedProfileImagePath(file) {
-    return `/uploads/profile-images/${file.filename}`;
-}
-
 export const uploadSeekerProfilePicture = createImageUploadMiddleware({
     fieldName: "profilePicture",
-    filenamePrefix: "seeker-profile",
 });
 
 export const uploadEmployerProfileLogo = createImageUploadMiddleware({
     fieldName: "logo",
-    filenamePrefix: "employer-logo",
 });

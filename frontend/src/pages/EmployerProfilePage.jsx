@@ -302,6 +302,25 @@ function EmployerProfilePage() {
             alt="Company logo"
             className="profile-image"
           />
+          {isEditing ? (
+            <div className="profile-media-stack">
+              <label className="profile-field">
+                <span>Company Logo</span>
+                <input
+                  className={getControlClass("profile-file-input", "logo")}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleLogoUpload}
+                  disabled={isUploadingImage}
+                />
+              </label>
+              <p className="profile-helper-copy profile-media-helper">
+                JPG, PNG, GIF, or WebP only, up to 5 MB.
+              </p>
+              {isUploadingImage ? <p className="profile-helper-copy profile-media-helper">Uploading image...</p> : null}
+              {fieldErrors.logo ? <p className="profile-field-error">{fieldErrors.logo}</p> : null}
+            </div>
+          ) : null}
           <div className="profile-visibility-card">
             <div className="profile-visibility-header">
               <p className="profile-visibility-label">Visibility</p>
@@ -332,31 +351,6 @@ function EmployerProfilePage() {
             <p><strong>Account Email:</strong> {user?.email || "N/A"}</p>
             {isEditing ? (
               <>
-                <label className="profile-field">
-                  <span>Upload Logo</span>
-                  <input
-                    className={getControlClass("profile-file-input", "logo")}
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
-                    onChange={handleLogoUpload}
-                    disabled={isUploadingImage}
-                  />
-                </label>
-                <p className="profile-helper-copy">
-                  Upload a JPG, PNG, GIF, or WebP image up to 5 MB.
-                </p>
-                {isUploadingImage ? <p className="profile-helper-copy">Uploading image...</p> : null}
-                <label className="profile-field">
-                  <span>Logo URL</span>
-                  <input
-                    className={getControlClass("profile-input", "logo")}
-                    type="text"
-                    name="logo"
-                    value={draft.logo}
-                    onChange={handleDraftChange}
-                  />
-                </label>
-                {fieldErrors.logo ? <p className="profile-field-error">{fieldErrors.logo}</p> : null}
                 <label className="profile-field">
                   <span>Contact Email</span>
                   <input

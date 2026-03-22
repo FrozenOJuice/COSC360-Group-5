@@ -256,8 +256,21 @@
   height: 158px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
   border: 4px solid #edf3fb;
+}
+
+.profile-media-stack {
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.profile-media-stack .profile-field {
+  margin-bottom: 8px;
+}
+
+.profile-media-helper {
+  margin-bottom: 0;
 }
 
 .profile-visibility-card {
