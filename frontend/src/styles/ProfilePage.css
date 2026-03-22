@@ -265,6 +265,13 @@
   margin-bottom: 18px;
 }
 
+.profile-media-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .profile-media-stack .profile-field {
   margin-bottom: 8px;
 }
@@ -364,5 +371,10 @@
 
   .profile-array-row {
     grid-template-columns: 1fr;
+  }
+
+  .profile-media-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

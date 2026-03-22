@@ -35,15 +35,6 @@ const employerProfileSchema = new mongoose.Schema({
             message: "Website must start with /, http://, or https://",
         },
     },
-    logo: {
-        type: String,
-        trim: true,
-        maxlength: 500,
-        validate: {
-            validator: allowOptionalUrlOrAppPath,
-            message: "Logo URL must start with /, http://, or https://",
-        },
-    },
     logoData: {
         type: Buffer,
         select: false,

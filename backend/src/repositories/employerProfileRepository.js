@@ -25,3 +25,45 @@ export async function updateEmployerProfile(profileId, updateData) {
         runValidators: true,
     }).exec();
 }
+
+export async function setEmployerProfileLogo(profileId, logoData) {
+    return EmployerProfile.findByIdAndUpdate(
+        profileId,
+        {
+            $set: {
+                logoData: logoData.buffer,
+                logoContentType: logoData.contentType,
+                hasUploadedLogo: true,
+            },
+            $unset: {
+                logo: 1,
+            },
+        },
+        {
+            new: true,
+            runValidators: true,
+            strict: false,
+        }
+    ).exec();
+}
+
+export async function clearEmployerProfileLogo(profileId) {
+    return EmployerProfile.findByIdAndUpdate(
+        profileId,
+        {
+            $set: {
+                hasUploadedLogo: false,
+            },
+            $unset: {
+                logo: 1,
+                logoData: 1,
+                logoContentType: 1,
+            },
+        },
+        {
+            new: true,
+            runValidators: true,
+            strict: false,
+        }
+    ).exec();
+}

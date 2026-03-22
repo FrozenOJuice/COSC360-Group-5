@@ -1,6 +1,7 @@
 import {
     getCurrentSeekerProfile,
     getCurrentSeekerProfilePicture,
+    removeCurrentSeekerProfilePicture,
     getSeekerProfilePicture,
     getVisibleSeekerProfile,
     setCurrentSeekerProfilePicture,
@@ -20,6 +21,11 @@ export const updateSelfSeekerProfile = asyncHandler(async (req, res) => {
 
 export const uploadSelfSeekerProfilePicture = asyncHandler(async (req, res) => {
     const profile = await setCurrentSeekerProfilePicture(req.auth?.userId, req.file);
+    res.status(200).json({ success: true, data: profile });
+});
+
+export const removeSelfSeekerProfilePicture = asyncHandler(async (req, res) => {
+    const profile = await removeCurrentSeekerProfilePicture(req.auth?.userId);
     res.status(200).json({ success: true, data: profile });
 });
 

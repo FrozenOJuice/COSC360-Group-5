@@ -82,7 +82,6 @@ export const updateSeekerProfileSchema = z.object({
             .min(2, "Current position must be at least 2 characters")
             .max(120, "Current position must be at most 120 characters")
     ),
-    profilePicture: optionalTrimmedString(urlOrAppPathSchema),
     phone: optionalTrimmedString(phoneSchema),
     resumeLink: optionalTrimmedString(urlOrAppPathSchema),
     visibility: optionalTrimmedString(visibilitySchema),
@@ -100,7 +99,6 @@ export const updateEmployerProfileSchema = z.object({
             .max(2000, "Company description must be at most 2000 characters")
     ),
     website: optionalTrimmedString(urlOrAppPathSchema),
-    logo: optionalTrimmedString(urlOrAppPathSchema),
     location: optionalTrimmedString(
         z.string()
             .min(2, "Location must be at least 2 characters")

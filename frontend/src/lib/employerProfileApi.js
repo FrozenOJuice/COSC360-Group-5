@@ -44,6 +44,19 @@ export async function uploadCurrentEmployerLogo(file) {
   return data.data;
 }
 
+export async function removeCurrentEmployerLogo() {
+  const response = await apiFetch("/api/employer-profile/me/logo", {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw await createResponseError(response, "Failed to remove employer logo");
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
 export async function updateCurrentEmployerProfile(profileData) {
   const response = await apiFetch("/api/employer-profile/me", {
     method: "PUT",

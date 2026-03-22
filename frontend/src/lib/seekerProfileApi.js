@@ -44,6 +44,19 @@ export async function uploadCurrentSeekerProfilePicture(file) {
   return data.data;
 }
 
+export async function removeCurrentSeekerProfilePicture() {
+  const response = await apiFetch("/api/seeker-profile/me/picture", {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw await createResponseError(response, "Failed to remove profile picture");
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
 export async function updateCurrentSeekerProfile(profileData) {
   const response = await apiFetch("/api/seeker-profile/me", {
     method: "PUT",

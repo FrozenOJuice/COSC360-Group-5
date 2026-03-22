@@ -2,6 +2,7 @@ import express from "express";
 import {
     getEmployerProfileByUserId,
     getEmployerProfileLogoByUserId,
+    removeSelfEmployerProfileLogo,
     getSelfEmployerProfile,
     getSelfEmployerProfileLogo,
     uploadSelfEmployerProfileLogo,
@@ -32,6 +33,12 @@ router.post(
     requireRole("employer"),
     uploadEmployerProfileLogo,
     uploadSelfEmployerProfileLogo
+);
+router.delete(
+    "/me/logo",
+    requireAuth,
+    requireRole("employer"),
+    removeSelfEmployerProfileLogo
 );
 router.get("/:userId/logo", attachAuth, validateParams(profileUserParamsSchema), getEmployerProfileLogoByUserId);
 router.get("/:userId", attachAuth, validateParams(profileUserParamsSchema), getEmployerProfileByUserId);

@@ -1,6 +1,8 @@
 import {
+    clearEmployerProfileLogo,
     createEmployerProfile,
     findEmployerProfileByUserId,
+    setEmployerProfileLogo,
     updateEmployerProfile,
 } from "../repositories/employerProfileRepository.js";
 import { appError } from "../utils/appError.js";
@@ -22,9 +24,7 @@ function normalizeEmployerProfile(profile) {
         website: typeof profile.website === "string" ? profile.website : "",
         logo: profile.hasUploadedLogo && ownerId
             ? `/api/employer-profile/${ownerId}/logo`
-            : typeof profile.logo === "string"
-                ? profile.logo
-                : "",
+            : "/default-profile.png",
         location: typeof profile.location === "string" ? profile.location : "",
         contactEmail: typeof profile.contactEmail === "string" ? profile.contactEmail : "",
         contactPhone: typeof profile.contactPhone === "string" ? profile.contactPhone : "",
@@ -69,12 +69,21 @@ export async function setCurrentEmployerProfileLogo(userId, file) {
         throw appError("NOT_FOUND", "Employer profile not found");
     }
 
-    const profile = await updateEmployerProfile(existingProfile._id, {
-        logoData: file.buffer,
-        logoContentType: file.mimetype,
-        hasUploadedLogo: true,
+    const profile = await setEmployerProfileLogo(existingProfile._id, {
+        buffer: file.buffer,
+        contentType: file.mimetype,
     });
 
+    return normalizeEmployerProfile(profile);
+}
+
+export async function removeCurrentEmployerProfileLogo(userId) {
+    const existingProfile = await findEmployerProfileByUserId(userId);
+    if (!existingProfile) {
+        throw appError("NOT_FOUND", "Employer profile not found");
+    }
+
+    const profile = await clearEmployerProfileLogo(existingProfile._id);
     return normalizeEmployerProfile(profile);
 }
 

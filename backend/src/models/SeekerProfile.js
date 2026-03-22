@@ -30,16 +30,6 @@ const seekerProfileSchema = new mongoose.Schema({
         minlength: 2,
         maxlength: 120,
     },
-    profilePicture: {
-        type: String,
-        trim: true,
-        maxlength: 500,
-        default: "/default-profile.png",
-        validate: {
-            validator: allowOptionalUrlOrAppPath,
-            message: "Profile picture URL must start with /, http://, or https://",
-        },
-    },
     profilePictureData: {
         type: Buffer,
         select: false,

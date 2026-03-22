@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/useAuth';
 import {
   getCurrentSeekerProfile,
+  removeCurrentSeekerProfilePicture,
   uploadCurrentSeekerProfilePicture,
   updateCurrentSeekerProfile,
 } from '../lib/seekerProfileApi';
@@ -41,6 +42,7 @@ function JobSeekerProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isRemovingImage, setIsRemovingImage] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
 
@@ -146,7 +148,6 @@ function JobSeekerProfilePage() {
         jobExperience: normalizeEditableList(draft.jobExperience),
         education: normalizeEditableList(draft.education),
         currentPosition: draft.currentPosition,
-        profilePicture: draft.profilePicture,
         phone: draft.phone,
         resumeLink: draft.resumeLink,
         visibility: draft.visibility,
@@ -210,6 +211,42 @@ function JobSeekerProfilePage() {
     }
   }
 
+  async function handleRemoveProfilePicture() {
+    setIsRemovingImage(true);
+    setSaveError('');
+    setSaveSuccess('');
+    setFieldErrors((currentErrors) => {
+      if (!currentErrors.profilePicture) {
+        return currentErrors;
+      }
+
+      const nextErrors = { ...currentErrors };
+      delete nextErrors.profilePicture;
+      return nextErrors;
+    });
+
+    try {
+      const updatedProfile = await removeCurrentSeekerProfilePicture();
+      setProfile(updatedProfile);
+      setDraft((currentDraft) => ({
+        ...currentDraft,
+        profilePicture: updatedProfile.profilePicture,
+      }));
+      setSaveSuccess('Profile picture removed.');
+    } catch (err) {
+      const nextFieldErrors = err?.fieldErrors || {};
+      setFieldErrors((currentErrors) => ({
+        ...currentErrors,
+        ...nextFieldErrors,
+      }));
+      if (!nextFieldErrors.profilePicture) {
+        setSaveError(err.message || 'Failed to remove profile picture');
+      }
+    } finally {
+      setIsRemovingImage(false);
+    }
+  }
+
   function getControlClass(baseClass, fieldName) {
     return fieldErrors[fieldName] ? `${baseClass} profile-control-error` : baseClass;
   }
@@ -236,6 +273,7 @@ function JobSeekerProfilePage() {
   const visibilityDescription = visibilityValue === 'public'
     ? 'Anyone can view your seeker profile.'
     : 'Only you and admins can view your seeker profile.';
+  const hasCustomProfilePicture = profile?.profilePicture && profile.profilePicture !== '/default-profile.png';
 
   return (
     <div className="profile-container">
@@ -424,12 +462,24 @@ function JobSeekerProfilePage() {
                   type="file"
                   accept="image/jpeg,image/png,image/gif,image/webp"
                   onChange={handleProfilePictureUpload}
-                  disabled={isUploadingImage}
+                  disabled={isUploadingImage || isRemovingImage}
                 />
               </label>
-              <p className="profile-helper-copy profile-media-helper">
-                JPG, PNG, GIF, or WebP only, up to 5 MB.
-              </p>
+              <div className="profile-media-actions">
+                <p className="profile-helper-copy profile-media-helper">
+                  JPG, PNG, GIF, or WebP only, up to 5 MB.
+                </p>
+                {hasCustomProfilePicture ? (
+                  <button
+                    type="button"
+                    className="profile-inline-button profile-inline-button-muted"
+                    onClick={handleRemoveProfilePicture}
+                    disabled={isUploadingImage || isRemovingImage}
+                  >
+                    {isRemovingImage ? 'Removing...' : 'Remove Picture'}
+                  </button>
+                ) : null}
+              </div>
               {isUploadingImage ? <p className="profile-helper-copy profile-media-helper">Uploading image...</p> : null}
               {fieldErrors.profilePicture ? <p className="profile-field-error">{fieldErrors.profilePicture}</p> : null}
             </div>

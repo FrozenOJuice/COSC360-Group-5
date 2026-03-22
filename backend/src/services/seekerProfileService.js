@@ -1,6 +1,8 @@
 import {
+    clearSeekerProfilePicture,
     createSeekerProfile,
     findSeekerProfileByUserId,
+    setSeekerProfilePicture,
     updateSeekerProfile,
 } from "../repositories/seekerProfileRepository.js";
 import { appError } from "../utils/appError.js";
@@ -23,8 +25,6 @@ function normalizeSeekerProfile(profile) {
         currentPosition: typeof profile.currentPosition === "string" ? profile.currentPosition : "",
         profilePicture: profile.hasUploadedProfilePicture && ownerId
             ? `/api/seeker-profile/${ownerId}/picture`
-            : typeof profile.profilePicture === "string" && profile.profilePicture
-            ? profile.profilePicture
             : "/default-profile.png",
         phone: typeof profile.phone === "string" ? profile.phone : "",
         resumeLink: typeof profile.resumeLink === "string" && profile.resumeLink
@@ -69,12 +69,21 @@ export async function setCurrentSeekerProfilePicture(userId, file) {
         throw appError("NOT_FOUND", "Profile not found");
     }
 
-    const profile = await updateSeekerProfile(existingProfile._id, {
-        profilePictureData: file.buffer,
-        profilePictureContentType: file.mimetype,
-        hasUploadedProfilePicture: true,
+    const profile = await setSeekerProfilePicture(existingProfile._id, {
+        buffer: file.buffer,
+        contentType: file.mimetype,
     });
 
+    return normalizeSeekerProfile(profile);
+}
+
+export async function removeCurrentSeekerProfilePicture(userId) {
+    const existingProfile = await findSeekerProfileByUserId(userId);
+    if (!existingProfile) {
+        throw appError("NOT_FOUND", "Profile not found");
+    }
+
+    const profile = await clearSeekerProfilePicture(existingProfile._id);
     return normalizeSeekerProfile(profile);
 }
 

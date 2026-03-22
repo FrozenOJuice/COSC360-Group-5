@@ -2,6 +2,7 @@ import express from "express";
 import {
     getSeekerProfileByUserId,
     getSeekerProfilePictureByUserId,
+    removeSelfSeekerProfilePicture,
     getSelfSeekerProfile,
     getSelfSeekerProfilePicture,
     uploadSelfSeekerProfilePicture,
@@ -32,6 +33,12 @@ router.post(
     requireRole("seeker"),
     uploadSeekerProfilePicture,
     uploadSelfSeekerProfilePicture
+);
+router.delete(
+    "/me/picture",
+    requireAuth,
+    requireRole("seeker"),
+    removeSelfSeekerProfilePicture
 );
 router.get("/:userId/picture", attachAuth, validateParams(profileUserParamsSchema), getSeekerProfilePictureByUserId);
 router.get("/:userId", attachAuth, validateParams(profileUserParamsSchema), getSeekerProfileByUserId);

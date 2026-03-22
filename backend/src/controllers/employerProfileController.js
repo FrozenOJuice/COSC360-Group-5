@@ -1,6 +1,7 @@
 import {
     getCurrentEmployerProfile,
     getCurrentEmployerProfileLogo,
+    removeCurrentEmployerProfileLogo,
     getEmployerProfileLogo,
     getVisibleEmployerProfile,
     setCurrentEmployerProfileLogo,
@@ -20,6 +21,11 @@ export const updateSelfEmployerProfile = asyncHandler(async (req, res) => {
 
 export const uploadSelfEmployerProfileLogo = asyncHandler(async (req, res) => {
     const profile = await setCurrentEmployerProfileLogo(req.auth?.userId, req.file);
+    res.status(200).json({ success: true, data: profile });
+});
+
+export const removeSelfEmployerProfileLogo = asyncHandler(async (req, res) => {
+    const profile = await removeCurrentEmployerProfileLogo(req.auth?.userId);
     res.status(200).json({ success: true, data: profile });
 });
 
