@@ -57,9 +57,6 @@ function JobDetailsPage({ jobId }) {
       }
     }
 
-    setLoading(true);
-    setError("");
-    setJob(null);
     void loadJob();
 
     return () => {

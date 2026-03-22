@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import {
   getCurrentEmployerProfile,
@@ -6,6 +5,7 @@ import {
   uploadCurrentEmployerLogo,
   updateCurrentEmployerProfile,
 } from "../lib/employerProfileApi";
+import { useProfileEditor } from "../profile/useProfileEditor";
 import { resolveProfileAssetUrl } from "../lib/profileAssetUrl";
 import "../styles/ProfilePage.css";
 
@@ -24,99 +24,59 @@ function createEmployerDraft(profile, user) {
 
 function EmployerProfilePage() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [draft, setDraft] = useState(createEmployerDraft(null, null));
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isRemovingImage, setIsRemovingImage] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const [saveSuccess, setSaveSuccess] = useState("");
-
-  useEffect(() => {
-    if (!user?.id) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    getCurrentEmployerProfile()
-      .then((data) => {
-        setProfile(data);
-        setDraft(createEmployerDraft(data, user));
-        setError(null);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch employer profile:", err);
-        setError(err.message || "Failed to load employer profile");
-      })
-      .finally(() => setLoading(false));
-  }, [user?.id]);
-
-  function handleDraftChange(event) {
-    const { name, value } = event.target;
-    setDraft((currentDraft) => ({
-      ...currentDraft,
-      [name]: value,
-    }));
-    setFieldErrors((currentErrors) => {
-      if (!currentErrors[name]) {
-        return currentErrors;
-      }
-
-      const nextErrors = { ...currentErrors };
-      delete nextErrors[name];
-      return nextErrors;
-    });
-  }
-
-  function handleStartEditing() {
-    setDraft(createEmployerDraft(profile, user));
-    setFieldErrors({});
-    setSaveError("");
-    setSaveSuccess("");
-    setIsEditing(true);
-  }
-
-  function handleCancelEditing() {
-    setDraft(createEmployerDraft(profile, user));
-    setFieldErrors({});
-    setSaveError("");
-    setSaveSuccess("");
-    setIsEditing(false);
-  }
+  const {
+    profile,
+    draft,
+    fieldErrors,
+    loading,
+    error,
+    isEditing,
+    isSaving,
+    isUploadingImage,
+    isRemovingImage,
+    saveError,
+    saveSuccess,
+    handleDraftChange,
+    getControlClass,
+    startEditing,
+    cancelEditing,
+    saveDraft,
+    uploadProfileImage,
+    removeProfileImage,
+  } = useProfileEditor({
+    user,
+    createDraft: createEmployerDraft,
+    loadProfile: getCurrentEmployerProfile,
+    loadErrorMessage: "Failed to load employer profile",
+    saveProfile: updateCurrentEmployerProfile,
+    buildSavePayload: (nextDraft) => ({
+      companyName: nextDraft.companyName,
+      companyDescription: nextDraft.companyDescription,
+      website: nextDraft.website,
+      location: nextDraft.location,
+      contactEmail: nextDraft.contactEmail,
+      contactPhone: nextDraft.contactPhone,
+      visibility: nextDraft.visibility,
+    }),
+    saveErrorMessage: "Failed to update employer profile",
+    saveSuccessMessage: "Employer profile updated successfully.",
+    uploadImage: uploadCurrentEmployerLogo,
+    uploadErrorMessage: "Failed to upload employer logo",
+    uploadSuccessMessage: "Employer logo uploaded successfully.",
+    removeImage: removeCurrentEmployerLogo,
+    removeErrorMessage: "Failed to remove employer logo",
+    removeSuccessMessage: "Employer logo removed.",
+    imageFieldName: "logo",
+  });
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setIsSaving(true);
-    setFieldErrors({});
-    setSaveError("");
-    setSaveSuccess("");
 
     try {
-      const updatedProfile = await updateCurrentEmployerProfile({
-        companyName: draft.companyName,
-        companyDescription: draft.companyDescription,
-        website: draft.website,
-        location: draft.location,
-        contactEmail: draft.contactEmail,
-        contactPhone: draft.contactPhone,
-        visibility: draft.visibility,
-      });
-
-      setProfile(updatedProfile);
-      setDraft(createEmployerDraft(updatedProfile, user));
-      setIsEditing(false);
-      setSaveSuccess("Employer profile updated successfully.");
-    } catch (err) {
-      const nextFieldErrors = err?.fieldErrors || {};
-      setFieldErrors(nextFieldErrors);
-      setSaveError(Object.keys(nextFieldErrors).length === 0 ? (err.message || "Failed to update employer profile") : "");
-    } finally {
-      setIsSaving(false);
+      await saveDraft();
+    } catch (error) {
+      // The shared profile editor hook already exposes the save failure state.
+      return error;
     }
   }
 
@@ -126,83 +86,23 @@ function EmployerProfilePage() {
       return;
     }
 
-    setIsUploadingImage(true);
-    setSaveError("");
-    setSaveSuccess("");
-    setFieldErrors((currentErrors) => {
-      if (!currentErrors.logo) {
-        return currentErrors;
-      }
-
-      const nextErrors = { ...currentErrors };
-      delete nextErrors.logo;
-      return nextErrors;
-    });
-
     try {
-      const updatedProfile = await uploadCurrentEmployerLogo(file);
-      setProfile((currentProfile) => ({
-        ...(currentProfile || updatedProfile),
-        logo: updatedProfile.logo,
-      }));
-      setDraft((currentDraft) => ({
-        ...currentDraft,
-        logo: updatedProfile.logo,
-      }));
-      setSaveSuccess("Employer logo uploaded successfully.");
-    } catch (err) {
-      const nextFieldErrors = err?.fieldErrors || {};
-      setFieldErrors((currentErrors) => ({
-        ...currentErrors,
-        ...nextFieldErrors,
-      }));
-      if (!nextFieldErrors.logo) {
-        setSaveError(err.message || "Failed to upload employer logo");
-      }
-    } finally {
-      setIsUploadingImage(false);
-      event.target.value = "";
+      await uploadProfileImage(file);
+    } catch (error) {
+      // The shared profile editor hook already exposes the upload failure state.
+      return error;
     }
+
+    event.target.value = "";
   }
 
   async function handleRemoveLogo() {
-    setIsRemovingImage(true);
-    setSaveError("");
-    setSaveSuccess("");
-    setFieldErrors((currentErrors) => {
-      if (!currentErrors.logo) {
-        return currentErrors;
-      }
-
-      const nextErrors = { ...currentErrors };
-      delete nextErrors.logo;
-      return nextErrors;
-    });
-
     try {
-      const updatedProfile = await removeCurrentEmployerLogo();
-      setProfile(updatedProfile);
-      setDraft((currentDraft) => ({
-        ...currentDraft,
-        logo: updatedProfile.logo,
-      }));
-      setSaveSuccess("Employer logo removed.");
-    } catch (err) {
-      const nextFieldErrors = err?.fieldErrors || {};
-      setFieldErrors((currentErrors) => ({
-        ...currentErrors,
-        ...nextFieldErrors,
-      }));
-      if (!nextFieldErrors.logo) {
-        setSaveError(err.message || "Failed to remove employer logo");
-      }
-    } finally {
-      setIsRemovingImage(false);
+      await removeProfileImage();
+    } catch (error) {
+      // The shared profile editor hook already exposes the removal failure state.
+      return error;
     }
-  }
-
-  function getControlClass(baseClass, fieldName) {
-    return fieldErrors[fieldName] ? `${baseClass} profile-control-error` : baseClass;
   }
 
   if (loading) {
@@ -241,7 +141,7 @@ function EmployerProfilePage() {
                   <button
                     type="button"
                     className="profile-button profile-button-secondary"
-                    onClick={handleCancelEditing}
+                    onClick={cancelEditing}
                     disabled={isSaving}
                   >
                     Cancel
@@ -258,7 +158,7 @@ function EmployerProfilePage() {
                 <button
                   type="button"
                   className="profile-button"
-                  onClick={handleStartEditing}
+                  onClick={startEditing}
                 >
                   Edit Profile
                 </button>

@@ -6,21 +6,19 @@ import { getSeekerProfileByUserId } from "../lib/seekerProfileApi";
 import "../styles/ProfilePage.css";
 
 function AdminProfilePage({ profileRole, userId }) {
+  const hasProfileParams = Boolean(profileRole && userId);
+  const requestKey = hasProfileParams ? `${profileRole}:${userId}` : "";
   const [profile, setProfile] = useState(null);
   const [managedUser, setManagedUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loadedRequestKey, setLoadedRequestKey] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!profileRole || !userId) {
-      setError("Profile not found.");
-      setLoading(false);
+    if (!hasProfileParams) {
       return;
     }
 
     let cancelled = false;
-    setLoading(true);
-    setError("");
 
     const profileRequest = profileRole === "employer"
       ? getEmployerProfileByUserId(userId)
@@ -36,30 +34,37 @@ function AdminProfilePage({ profileRole, userId }) {
 
           setProfile(profileData);
           setManagedUser(userResponse.data?.user || null);
+          setError("");
+          setLoadedRequestKey(requestKey);
         }
       })
       .catch((err) => {
         if (!cancelled) {
+          setProfile(null);
+          setManagedUser(null);
           setError(err.message || "Failed to load profile");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
+          setLoadedRequestKey(requestKey);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [profileRole, userId]);
+  }, [hasProfileParams, profileRole, requestKey, userId]);
+
+  if (!hasProfileParams) {
+    return <div className="profile-container">Profile not found.</div>;
+  }
+
+  const loading = loadedRequestKey !== requestKey;
+  const resolvedError = loadedRequestKey === requestKey ? error : "";
 
   if (loading) {
     return <div className="profile-container">Loading profile...</div>;
   }
 
-  if (error) {
-    return <div className="profile-container">{error}</div>;
+  if (resolvedError) {
+    return <div className="profile-container">{resolvedError}</div>;
   }
 
   const profileTypeLabel = profileRole === "employer" ? "Employer" : "Seeker";

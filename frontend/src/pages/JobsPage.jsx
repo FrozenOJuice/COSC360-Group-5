@@ -166,7 +166,6 @@ function JobsPage() {
     let isActive = true;
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
-    setLoading(true);
 
     async function loadJobs() {
       try {
@@ -220,6 +219,8 @@ function JobsPage() {
   }, [query]);
 
   function updateQuery(patch) {
+    setLoading(true);
+    setError("");
     setQuery((current) => ({
       ...current,
       ...patch,
@@ -227,6 +228,8 @@ function JobsPage() {
   }
 
   function clearFilters() {
+    setLoading(true);
+    setError("");
     setSearchInput("");
     setCategoryInput("");
     setCountryInput("");
@@ -264,7 +267,11 @@ function JobsPage() {
             <input
               type="search"
               value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              onChange={(event) => {
+                setLoading(true);
+                setError("");
+                setSearchInput(event.target.value);
+              }}
               placeholder="Search title, category, or country"
             />
           </label>

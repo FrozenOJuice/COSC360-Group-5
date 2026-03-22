@@ -1,87 +1,85 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '../auth/useAuth';
+import { useAuth } from "../auth/useAuth";
 import {
   getCurrentSeekerProfile,
   removeCurrentSeekerProfilePicture,
   uploadCurrentSeekerProfilePicture,
   updateCurrentSeekerProfile,
-} from '../lib/seekerProfileApi';
-import { resolveProfileAssetUrl } from '../lib/profileAssetUrl';
-import '../styles/ProfilePage.css';
+} from "../lib/seekerProfileApi";
+import { useProfileEditor } from "../profile/useProfileEditor";
+import { resolveProfileAssetUrl } from "../lib/profileAssetUrl";
+import "../styles/ProfilePage.css";
 
 function createEditableList(values) {
-  return Array.isArray(values) && values.length ? values : [''];
+  return Array.isArray(values) && values.length ? values : [""];
 }
 
 function normalizeEditableList(values) {
   return Array.isArray(values)
-    ? values.map((item) => String(item || '').trim()).filter(Boolean)
+    ? values.map((item) => String(item || "").trim()).filter(Boolean)
     : [];
 }
 
 function createSeekerDraft(profile) {
   return {
-    bio: profile?.bio || '',
+    bio: profile?.bio || "",
     jobExperience: createEditableList(profile?.jobExperience),
     education: createEditableList(profile?.education),
-    currentPosition: profile?.currentPosition || '',
-    profilePicture: profile?.profilePicture || '/default-profile.png',
-    phone: profile?.phone || '',
-    resumeLink: profile?.resumeLink || '#',
-    visibility: profile?.visibility === 'public' ? 'public' : 'private',
+    currentPosition: profile?.currentPosition || "",
+    profilePicture: profile?.profilePicture || "/default-profile.png",
+    phone: profile?.phone || "",
+    resumeLink: profile?.resumeLink || "#",
+    visibility: profile?.visibility === "public" ? "public" : "private",
   };
 }
 
 function JobSeekerProfilePage() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [draft, setDraft] = useState(createSeekerDraft(null));
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isRemovingImage, setIsRemovingImage] = useState(false);
-  const [saveError, setSaveError] = useState('');
-  const [saveSuccess, setSaveSuccess] = useState('');
-
-  useEffect(() => {
-    if (!user?.id) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    getCurrentSeekerProfile()
-        .then((data) => {
-          setProfile(data);
-          setDraft(createSeekerDraft(data));
-          setError(null);
-        })
-        .catch((err) => {
-          console.error('Failed to fetch profile:', err);
-          setError(err.message || 'Failed to load profile');
-        })
-        .finally(() => setLoading(false));
-  }, [user?.id]);
-
-  function handleDraftChange(event) {
-    const { name, value } = event.target;
-    setDraft((currentDraft) => ({
-      ...currentDraft,
-      [name]: value,
-    }));
-    setFieldErrors((currentErrors) => {
-      if (!currentErrors[name]) {
-        return currentErrors;
-      }
-
-      const nextErrors = { ...currentErrors };
-      delete nextErrors[name];
-      return nextErrors;
-    });
-  }
+  const {
+    profile,
+    draft,
+    setDraft,
+    fieldErrors,
+    loading,
+    error,
+    isEditing,
+    isSaving,
+    isUploadingImage,
+    isRemovingImage,
+    saveError,
+    saveSuccess,
+    clearFieldError,
+    handleDraftChange,
+    getControlClass,
+    startEditing,
+    cancelEditing,
+    saveDraft,
+    uploadProfileImage,
+    removeProfileImage,
+  } = useProfileEditor({
+    user,
+    createDraft: createSeekerDraft,
+    loadProfile: getCurrentSeekerProfile,
+    loadErrorMessage: "Failed to load profile",
+    saveProfile: updateCurrentSeekerProfile,
+    buildSavePayload: (nextDraft) => ({
+      bio: nextDraft.bio,
+      jobExperience: normalizeEditableList(nextDraft.jobExperience),
+      education: normalizeEditableList(nextDraft.education),
+      currentPosition: nextDraft.currentPosition,
+      phone: nextDraft.phone,
+      resumeLink: nextDraft.resumeLink,
+      visibility: nextDraft.visibility,
+    }),
+    saveErrorMessage: "Failed to update profile",
+    saveSuccessMessage: "Profile updated successfully.",
+    uploadImage: uploadCurrentSeekerProfilePicture,
+    uploadErrorMessage: "Failed to upload profile picture",
+    uploadSuccessMessage: "Profile picture uploaded successfully.",
+    removeImage: removeCurrentSeekerProfilePicture,
+    removeErrorMessage: "Failed to remove profile picture",
+    removeSuccessMessage: "Profile picture removed.",
+    imageFieldName: "profilePicture",
+  });
 
   function handleListItemChange(fieldName, index, value) {
     setDraft((currentDraft) => ({
@@ -90,21 +88,13 @@ function JobSeekerProfilePage() {
         itemIndex === index ? value : item
       )),
     }));
-    setFieldErrors((currentErrors) => {
-      if (!currentErrors[fieldName]) {
-        return currentErrors;
-      }
-
-      const nextErrors = { ...currentErrors };
-      delete nextErrors[fieldName];
-      return nextErrors;
-    });
+    clearFieldError(fieldName);
   }
 
   function handleAddListItem(fieldName) {
     setDraft((currentDraft) => ({
       ...currentDraft,
-      [fieldName]: [...currentDraft[fieldName], ''],
+      [fieldName]: [...currentDraft[fieldName], ""],
     }));
   }
 
@@ -114,55 +104,19 @@ function JobSeekerProfilePage() {
 
       return {
         ...currentDraft,
-        [fieldName]: nextItems.length ? nextItems : [''],
+        [fieldName]: nextItems.length ? nextItems : [""],
       };
     });
   }
 
-  function handleStartEditing() {
-    setDraft(createSeekerDraft(profile));
-    setFieldErrors({});
-    setSaveError('');
-    setSaveSuccess('');
-    setIsEditing(true);
-  }
-
-  function handleCancelEditing() {
-    setDraft(createSeekerDraft(profile));
-    setFieldErrors({});
-    setSaveError('');
-    setSaveSuccess('');
-    setIsEditing(false);
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
-    setIsSaving(true);
-    setFieldErrors({});
-    setSaveError('');
-    setSaveSuccess('');
 
     try {
-      const updatedProfile = await updateCurrentSeekerProfile({
-        bio: draft.bio,
-        jobExperience: normalizeEditableList(draft.jobExperience),
-        education: normalizeEditableList(draft.education),
-        currentPosition: draft.currentPosition,
-        phone: draft.phone,
-        resumeLink: draft.resumeLink,
-        visibility: draft.visibility,
-      });
-
-      setProfile(updatedProfile);
-      setDraft(createSeekerDraft(updatedProfile));
-      setIsEditing(false);
-      setSaveSuccess('Profile updated successfully.');
-    } catch (err) {
-      const nextFieldErrors = err?.fieldErrors || {};
-      setFieldErrors(nextFieldErrors);
-      setSaveError(Object.keys(nextFieldErrors).length === 0 ? (err.message || 'Failed to update profile') : '');
-    } finally {
-      setIsSaving(false);
+      await saveDraft();
+    } catch (error) {
+      // The shared profile editor hook already exposes the save failure state.
+      return error;
     }
   }
 
@@ -172,83 +126,23 @@ function JobSeekerProfilePage() {
       return;
     }
 
-    setIsUploadingImage(true);
-    setSaveError('');
-    setSaveSuccess('');
-    setFieldErrors((currentErrors) => {
-      if (!currentErrors.profilePicture) {
-        return currentErrors;
-      }
-
-      const nextErrors = { ...currentErrors };
-      delete nextErrors.profilePicture;
-      return nextErrors;
-    });
-
     try {
-      const updatedProfile = await uploadCurrentSeekerProfilePicture(file);
-      setProfile((currentProfile) => ({
-        ...(currentProfile || updatedProfile),
-        profilePicture: updatedProfile.profilePicture,
-      }));
-      setDraft((currentDraft) => ({
-        ...currentDraft,
-        profilePicture: updatedProfile.profilePicture,
-      }));
-      setSaveSuccess('Profile picture uploaded successfully.');
-    } catch (err) {
-      const nextFieldErrors = err?.fieldErrors || {};
-      setFieldErrors((currentErrors) => ({
-        ...currentErrors,
-        ...nextFieldErrors,
-      }));
-      if (!nextFieldErrors.profilePicture) {
-        setSaveError(err.message || 'Failed to upload profile picture');
-      }
-    } finally {
-      setIsUploadingImage(false);
-      event.target.value = '';
+      await uploadProfileImage(file);
+    } catch (error) {
+      // The shared profile editor hook already exposes the upload failure state.
+      return error;
     }
+
+    event.target.value = "";
   }
 
   async function handleRemoveProfilePicture() {
-    setIsRemovingImage(true);
-    setSaveError('');
-    setSaveSuccess('');
-    setFieldErrors((currentErrors) => {
-      if (!currentErrors.profilePicture) {
-        return currentErrors;
-      }
-
-      const nextErrors = { ...currentErrors };
-      delete nextErrors.profilePicture;
-      return nextErrors;
-    });
-
     try {
-      const updatedProfile = await removeCurrentSeekerProfilePicture();
-      setProfile(updatedProfile);
-      setDraft((currentDraft) => ({
-        ...currentDraft,
-        profilePicture: updatedProfile.profilePicture,
-      }));
-      setSaveSuccess('Profile picture removed.');
-    } catch (err) {
-      const nextFieldErrors = err?.fieldErrors || {};
-      setFieldErrors((currentErrors) => ({
-        ...currentErrors,
-        ...nextFieldErrors,
-      }));
-      if (!nextFieldErrors.profilePicture) {
-        setSaveError(err.message || 'Failed to remove profile picture');
-      }
-    } finally {
-      setIsRemovingImage(false);
+      await removeProfileImage();
+    } catch (error) {
+      // The shared profile editor hook already exposes the removal failure state.
+      return error;
     }
-  }
-
-  function getControlClass(baseClass, fieldName) {
-    return fieldErrors[fieldName] ? `${baseClass} profile-control-error` : baseClass;
   }
 
   if (loading) {
@@ -260,20 +154,20 @@ function JobSeekerProfilePage() {
   }
 
   const profileData = {
-    bio: profile?.bio || 'No bio available.',
-    jobExperience: profile?.jobExperience?.length ? profile.jobExperience : ['No job experience listed.'],
-    education: profile?.education?.length ? profile.education : ['No education listed.'],
-    currentPosition: profile?.currentPosition || 'No current position.',
-    profilePicture: profile?.profilePicture || '/default-profile.png',
-    phone: profile?.phone || 'No phone number.',
-    resumeLink: profile?.resumeLink || '#',
+    bio: profile?.bio || "No bio available.",
+    jobExperience: profile?.jobExperience?.length ? profile.jobExperience : ["No job experience listed."],
+    education: profile?.education?.length ? profile.education : ["No education listed."],
+    currentPosition: profile?.currentPosition || "No current position.",
+    profilePicture: profile?.profilePicture || "/default-profile.png",
+    phone: profile?.phone || "No phone number.",
+    resumeLink: profile?.resumeLink || "#",
   };
   const visibilityValue = isEditing ? draft.visibility : profile?.visibility;
-  const visibilityLabel = visibilityValue === 'public' ? 'Public' : 'Private';
-  const visibilityDescription = visibilityValue === 'public'
-    ? 'Anyone can view your seeker profile.'
-    : 'Only you and admins can view your seeker profile.';
-  const hasCustomProfilePicture = profile?.profilePicture && profile.profilePicture !== '/default-profile.png';
+  const visibilityLabel = visibilityValue === "public" ? "Public" : "Private";
+  const visibilityDescription = visibilityValue === "public"
+    ? "Anyone can view your seeker profile."
+    : "Only you and admins can view your seeker profile.";
+  const hasCustomProfilePicture = profile?.profilePicture && profile.profilePicture !== "/default-profile.png";
 
   return (
     <div className="profile-container">
@@ -287,7 +181,7 @@ function JobSeekerProfilePage() {
                   <button
                     type="button"
                     className="profile-button profile-button-secondary"
-                    onClick={handleCancelEditing}
+                    onClick={cancelEditing}
                     disabled={isSaving}
                   >
                     Cancel
@@ -297,14 +191,14 @@ function JobSeekerProfilePage() {
                     className="profile-button"
                     disabled={isSaving}
                   >
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? "Saving..." : "Save Changes"}
                   </button>
                 </>
               ) : (
                 <button
                   type="button"
                   className="profile-button"
-                  onClick={handleStartEditing}
+                  onClick={startEditing}
                 >
                   Edit Profile
                 </button>
@@ -317,7 +211,7 @@ function JobSeekerProfilePage() {
             <h2>Bio</h2>
             {isEditing ? (
               <textarea
-                className={getControlClass('profile-textarea', 'bio')}
+                className={getControlClass("profile-textarea", "bio")}
                 name="bio"
                 value={draft.bio}
                 onChange={handleDraftChange}
@@ -336,16 +230,16 @@ function JobSeekerProfilePage() {
                 {draft.jobExperience.map((job, index) => (
                   <div key={`job-experience-${index}`} className="profile-array-row">
                     <input
-                      className={getControlClass('profile-input', 'jobExperience')}
+                      className={getControlClass("profile-input", "jobExperience")}
                       type="text"
                       value={job}
-                      onChange={(event) => handleListItemChange('jobExperience', index, event.target.value)}
+                      onChange={(event) => handleListItemChange("jobExperience", index, event.target.value)}
                       placeholder="Example: Marketing Intern at Acme"
                     />
                     <button
                       type="button"
                       className="profile-inline-button profile-inline-button-muted"
-                      onClick={() => handleRemoveListItem('jobExperience', index)}
+                      onClick={() => handleRemoveListItem("jobExperience", index)}
                       disabled={draft.jobExperience.length === 1 && !draft.jobExperience[0].trim()}
                     >
                       Remove
@@ -355,7 +249,7 @@ function JobSeekerProfilePage() {
                 <button
                   type="button"
                   className="profile-inline-button"
-                  onClick={() => handleAddListItem('jobExperience')}
+                  onClick={() => handleAddListItem("jobExperience")}
                 >
                   Add Experience
                 </button>
@@ -377,16 +271,16 @@ function JobSeekerProfilePage() {
                 {draft.education.map((edu, index) => (
                   <div key={`education-${index}`} className="profile-array-row">
                     <input
-                      className={getControlClass('profile-input', 'education')}
+                      className={getControlClass("profile-input", "education")}
                       type="text"
                       value={edu}
-                      onChange={(event) => handleListItemChange('education', index, event.target.value)}
+                      onChange={(event) => handleListItemChange("education", index, event.target.value)}
                       placeholder="Example: BSc Computer Science, UBC Okanagan"
                     />
                     <button
                       type="button"
                       className="profile-inline-button profile-inline-button-muted"
-                      onClick={() => handleRemoveListItem('education', index)}
+                      onClick={() => handleRemoveListItem("education", index)}
                       disabled={draft.education.length === 1 && !draft.education[0].trim()}
                     >
                       Remove
@@ -396,7 +290,7 @@ function JobSeekerProfilePage() {
                 <button
                   type="button"
                   className="profile-inline-button"
-                  onClick={() => handleAddListItem('education')}
+                  onClick={() => handleAddListItem("education")}
                 >
                   Add Education
                 </button>
@@ -414,7 +308,7 @@ function JobSeekerProfilePage() {
             <h2>Current Job Position</h2>
             {isEditing ? (
               <input
-                className={getControlClass('profile-input', 'currentPosition')}
+                className={getControlClass("profile-input", "currentPosition")}
                 type="text"
                 name="currentPosition"
                 value={draft.currentPosition}
@@ -429,13 +323,13 @@ function JobSeekerProfilePage() {
             <h2>Resume</h2>
             {isEditing ? (
               <input
-                className={getControlClass('profile-input', 'resumeLink')}
+                className={getControlClass("profile-input", "resumeLink")}
                 type="text"
                 name="resumeLink"
                 value={draft.resumeLink}
                 onChange={handleDraftChange}
               />
-            ) : profileData.resumeLink && profileData.resumeLink !== '#' ? (
+            ) : profileData.resumeLink && profileData.resumeLink !== "#" ? (
               <a className="profile-link" href={profileData.resumeLink} target="_blank" rel="noreferrer">
                 Open Resume
               </a>
@@ -458,7 +352,7 @@ function JobSeekerProfilePage() {
               <label className="profile-field">
                 <span>Profile Picture</span>
                 <input
-                  className={getControlClass('profile-file-input', 'profilePicture')}
+                  className={getControlClass("profile-file-input", "profilePicture")}
                   type="file"
                   accept="image/jpeg,image/png,image/gif,image/webp"
                   onChange={handleProfilePictureUpload}
@@ -476,7 +370,7 @@ function JobSeekerProfilePage() {
                     onClick={handleRemoveProfilePicture}
                     disabled={isUploadingImage || isRemovingImage}
                   >
-                    {isRemovingImage ? 'Removing...' : 'Remove Picture'}
+                    {isRemovingImage ? "Removing..." : "Remove Picture"}
                   </button>
                 ) : null}
               </div>
@@ -496,7 +390,7 @@ function JobSeekerProfilePage() {
               <label className="profile-field profile-visibility-field">
                 <span>Who can view this profile</span>
                 <select
-                  className={getControlClass('profile-select', 'visibility')}
+                  className={getControlClass("profile-select", "visibility")}
                   name="visibility"
                   value={draft.visibility}
                   onChange={handleDraftChange}
@@ -510,14 +404,14 @@ function JobSeekerProfilePage() {
           </div>
           <div className="profile-side-details">
             <h2>Personal Information</h2>
-            <p><strong>Full Name:</strong> {user?.name || 'N/A'}</p>
-            <p><strong>Email:</strong> {user?.email || 'N/A'}</p>
+            <p><strong>Full Name:</strong> {user?.name || "N/A"}</p>
+            <p><strong>Email:</strong> {user?.email || "N/A"}</p>
             {isEditing ? (
               <>
                 <label className="profile-field">
                   <span>Phone Number</span>
                   <input
-                    className={getControlClass('profile-input', 'phone')}
+                    className={getControlClass("profile-input", "phone")}
                     type="text"
                     name="phone"
                     value={draft.phone}
