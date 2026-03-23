@@ -88,8 +88,6 @@ function JobDetailsPage({ jobId: jobIdProp }) {
         setDiscussion(response.data ?? { comments: [] });
         setDiscussionError("");
         setDiscussionLoading(false);
-
-        console.log(response.data);
       } catch {
         if (!isActive) {
           return;
