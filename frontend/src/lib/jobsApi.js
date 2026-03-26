@@ -50,6 +50,30 @@ export async function postJobDiscussionComment(jobId, comment) {
   return mapResultData(result, (data) => data?.discussion ?? { jobId, comments: [] });
 }
 
+export async function updateJobDiscussionComment(jobId, commentId, comment) {
+  const result = await requestJson(`/api/jobs/${jobId}/discussion/${commentId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ comment }),
+  }, {
+    fallbackMessage: "Could not update comment.",
+  });
+
+  return mapResultData(result, (data) => data?.discussion ?? { jobId, comments: [] });
+}
+
+export async function deleteJobDiscussionComment(jobId, commentId) {
+  const result = await requestJson(`/api/jobs/${jobId}/discussion/${commentId}`, {
+    method: "DELETE",
+  }, {
+    fallbackMessage: "Could not delete comment.",
+  });
+
+  return mapResultData(result, (data) => data?.discussion ?? { jobId, comments: [] });
+}
+
 export async function fetchJobOptions() {
   return requestJson("/api/jobs/options", {
     method: "GET",

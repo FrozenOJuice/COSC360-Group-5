@@ -8,7 +8,7 @@ import {
     getJobs,
     updateJob,
 } from "../controllers/jobController.js";
-import { getDiscussion, addComment } from "../controllers/jobDiscussionController.js";
+import { getDiscussion, addComment, updateComment, deleteComment } from "../controllers/jobDiscussionController.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 import { validateBody } from "../middleware/validateBody.js";
@@ -20,7 +20,10 @@ import {
     listJobsQuerySchema,
     updateJobSchema,
 } from "../validators/jobSchemas.js";
-import { createJobDiscussionCommentSchema } from "../validators/jobDiscussionSchemas.js";
+import {
+    createJobDiscussionCommentSchema,
+    jobDiscussionCommentParamsSchema,
+} from "../validators/jobDiscussionSchemas.js";
 
 const jobRouter = express.Router();
 
@@ -40,6 +43,19 @@ jobRouter.post(
     validateParams(jobParamsSchema),
     validateBody(createJobDiscussionCommentSchema),
     addComment
+);
+jobRouter.patch(
+    "/:id/discussion/:commentId",
+    requireAuth,
+    validateParams(jobDiscussionCommentParamsSchema),
+    validateBody(createJobDiscussionCommentSchema),
+    updateComment
+);
+jobRouter.delete(
+    "/:id/discussion/:commentId",
+    requireAuth,
+    validateParams(jobDiscussionCommentParamsSchema),
+    deleteComment
 );
 jobRouter.patch(
     "/:id",
