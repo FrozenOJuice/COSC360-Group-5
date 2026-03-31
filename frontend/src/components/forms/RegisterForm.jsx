@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
+import ProfileMediaPanel from "../../profile/ProfileMediaPanel";
+import { uploadCurrentSeekerProfilePicture } from "../../lib/seekerProfileApi";
 
 function RegisterForm() {
   const { register } = useAuth();
@@ -10,6 +12,11 @@ function RegisterForm() {
     confirmPassword: "",
     role: "seeker",
   });
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState(
+    "/default-profile.png"
+  );
+  const previewUrlRef = useRef();
   const [status, setStatus] = useState({ type: "", message: "", details: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEmployer = formData.role === "employer";
@@ -23,7 +30,47 @@ function RegisterForm() {
       ...current,
       [name]: value,
     }));
+
+    if (name === "role" && value === "employer") {
+      setProfilePictureFile(null);
+      setProfilePicturePreview("/default-profile.png");
+    }
   }
+
+  function handleProfilePictureUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    previewUrlRef.current = previewUrl;
+    setProfilePictureFile(file);
+    setProfilePicturePreview(previewUrl);
+    event.target.value = "";
+  }
+
+  function handleRemoveProfilePicture() {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = undefined;
+    }
+
+    setProfilePictureFile(null);
+    setProfilePicturePreview("/default-profile.png");
+  }
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -36,7 +83,7 @@ function RegisterForm() {
         message: "Passwords do not match.",
         details: [
           {
-            field: "Confirm Password",
+            field: "confirmPassword",
             message: "Passwords do not match",
           },
         ],
@@ -45,16 +92,46 @@ function RegisterForm() {
       return;
     }
 
-    try {
-      const { data, ok } = await register(formData);
+    const registerPayload = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      role: formData.role,
+    };
 
-      if (!ok) {
+    try {
+      const { data, ok } = await register(registerPayload);
+
+      if (!ok) {  
         setStatus({
           type: "error",
           message: data.message || "Could not create account",
           details: Array.isArray(data.details) ? data.details : [],
         });
         return;
+      }
+
+      if (profilePictureFile && !isEmployer) {
+        const uploadResult = await uploadCurrentSeekerProfilePicture(
+          profilePictureFile
+        );
+
+        if (!uploadResult.ok) {
+          setStatus({
+            type: "error",
+            message:
+              "Account created, but profile picture upload failed.",
+            details: uploadResult.error?.details || [
+              {
+                field: "profilePicture",
+                message: uploadResult.error?.message ||
+                  "Failed to upload profile picture",
+              },
+            ],
+          });
+          return;
+        }
       }
 
       setStatus({
@@ -69,6 +146,8 @@ function RegisterForm() {
         confirmPassword: "",
         role: "seeker",
       });
+      setProfilePictureFile(null);
+      setProfilePicturePreview("/default-profile.png");
     } catch {
       setStatus({
         type: "error",
@@ -142,6 +221,22 @@ function RegisterForm() {
           autoComplete="new-password"
         />
       </label>
+
+      {isEmployer ? null : (
+        <ProfileMediaPanel
+          imageSrc={profilePicturePreview}
+          imageAlt="Profile Picture"
+          isEditing
+          inputLabel="Profile Picture"
+          inputClassName="profile-file-input"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          onFileChange={handleProfilePictureUpload}
+          isUploading={isSubmitting}
+          hasCustomImage={profilePictureFile !== null}
+          onRemove={handleRemoveProfilePicture}
+          removeLabel="Remove picture"
+        />
+      )}
 
       {status.message && (
         <div className={`auth-status auth-status-${status.type}`}>

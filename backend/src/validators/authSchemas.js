@@ -38,7 +38,7 @@ export const registerSchema = z.object({
 }).strict().superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
         ctx.addIssue({
-            code: custom,
+            code: "custom",
             path: ["confirmPassword"],
             message: "Passwords do not match",
         });
