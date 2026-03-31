@@ -7,6 +7,7 @@ function RegisterForm() {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     role: "seeker",
   });
   const [status, setStatus] = useState({ type: "", message: "", details: [] });
@@ -29,6 +30,21 @@ function RegisterForm() {
     setIsSubmitting(true);
     setStatus({ type: "", message: "", details: [] });
 
+    if (formData.password !== formData.confirmPassword) {
+      setStatus({
+        type: "error",
+        message: "Passwords do not match.",
+        details: [
+          {
+            field: "Confirm Password",
+            message: "Passwords do not match",
+          },
+        ],
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const { data, ok } = await register(formData);
 
@@ -50,6 +66,7 @@ function RegisterForm() {
         name: "",
         email: "",
         password: "",
+        confirmPassword: "",
         role: "seeker",
       });
     } catch {
@@ -110,6 +127,18 @@ function RegisterForm() {
           value={formData.password}
           onChange={handleChange}
           placeholder="Create a strong password"
+          autoComplete="new-password"
+        />
+      </label>
+
+      <label className="auth-field">
+        <span>Confirm Password</span>
+        <input
+          name="confirmPassword"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          placeholder="Confirm password"
           autoComplete="new-password"
         />
       </label>
