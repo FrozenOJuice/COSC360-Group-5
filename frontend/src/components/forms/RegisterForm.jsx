@@ -103,7 +103,7 @@ function RegisterForm() {
     try {
       const { data, ok } = await register(registerPayload);
 
-      if (!ok) {  
+      if (!ok) {
         setStatus({
           type: "error",
           message: data.message || "Could not create account",
