@@ -46,21 +46,6 @@ function AdminPage() {
         </aside>
       </section>
 
-      <section className="admin-overview-grid" id="admin-overview">
-        <article className="admin-stat-card">
-          <strong>User access</strong>
-          <p>Search accounts and change access for non-admin users.</p>
-        </article>
-        <article className="admin-stat-card">
-          <strong>Profile review</strong>
-          <p>Open seeker and employer profiles from the user table.</p>
-        </article>
-        <article className="admin-stat-card">
-          <strong>No fake metrics</strong>
-          <p>Operational counts stay hidden until real reporting exists.</p>
-        </article>
-      </section>
-
       <AdminUsersPanel />
     </main>
   );
