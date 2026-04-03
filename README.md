@@ -1,6 +1,14 @@
 # COSC360-Group-6
 
-Steps to run:
+Steps to run through docker:
+Create a .env file in backend/ and paste the variables
+
+Open a new terminal
+In the root folder
+- docker-compose up --build
+
+
+Steps to run locally:
 Create a .env file in backend/ and paste the variables
 
 Open a new terminal
