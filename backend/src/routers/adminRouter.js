@@ -5,6 +5,7 @@ import { requireRole } from "../middleware/requireRole.js";
 import { validateBody } from "../middleware/validateBody.js";
 import { validateParams } from "../middleware/validateParams.js";
 import { validateQuery } from "../middleware/validateQuery.js";
+import { deleteJob, updateJob } from "../controllers/jobController.js";
 import {
     adminUserParamsSchema,
     listUsersQuerySchema,
@@ -24,5 +25,15 @@ adminRouter.patch(
     validateBody(updateUserStatusSchema),
     updateUserStatus
 );
+adminRouter.patch("/jobs/:id",
+    requireAuth,
+    requireRole("admin"),
+    validateParams(adminUserParamsSchema), 
+    updateJob);
+adminRouter.delete("/jobs/:id",
+    requireAuth,
+    requireRole("admin"),
+    validateParams(adminUserParamsSchema), 
+    deleteJob);
 
 export default adminRouter;
