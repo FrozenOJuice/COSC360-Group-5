@@ -8,6 +8,7 @@ import {
     listEmployerJobs,
     updateEmployerJob,
 } from "../services/jobService.js";
+import { addClient, removeClient } from "../utils/jobEventBus.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 
 export const getJobs = asyncHandler(async (req, res) => {
@@ -44,3 +45,22 @@ export const deleteJob = asyncHandler(async (req, res) => {
     const result = await deleteEmployerJob(req.auth?.userId, req.params?.id);
     return sendSuccess(res, result);
 });
+
+export function streamJobs(req, res) {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    addClient(res);
+    res.write("event: connected\ndata: {}\n\n");
+
+    const heartbeat = setInterval(() => {
+        res.write(":heartbeat\n\n");
+    }, 30000);
+
+    req.on("close", () => {
+        clearInterval(heartbeat);
+        removeClient(res);
+    });
+}

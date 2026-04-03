@@ -6,6 +6,7 @@ import {
     getJobById,
     getJobOptions,
     getJobs,
+    streamJobs,
     updateJob,
 } from "../controllers/jobController.js";
 import { getDiscussion, addComment, updateComment, deleteComment } from "../controllers/jobDiscussionController.js";
@@ -29,6 +30,7 @@ const jobRouter = express.Router();
 
 jobRouter.get("/", validateQuery(listJobsQuerySchema), getJobs);
 jobRouter.get("/options", getJobOptions);
+jobRouter.get("/stream", streamJobs);
 jobRouter.get("/me", requireAuth, requireRole("employer"), validateQuery(listJobsQuerySchema), getEmployerJobs);
 jobRouter.post("/", requireAuth, requireRole("employer"), validateBody(createJobSchema), createJob);
 jobRouter.get("/:id", validateParams(jobParamsSchema), getJobById);

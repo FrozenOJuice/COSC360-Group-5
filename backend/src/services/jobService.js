@@ -10,6 +10,7 @@ import {
 import { toJobDto } from "../dto/jobDto.js";
 import { normalizeTextSearch, toPositiveInt } from "./queryUtils.js";
 import { appError } from "../utils/appError.js";
+import { broadcast } from "../utils/jobEventBus.js";
 
 const SORT_FIELDS = new Set(["title", "category", "country", "salary", "currency"]);
 
@@ -213,6 +214,7 @@ export async function createEmployerJob(employerUserId, payload = {}) {
         ...buildManagedJobPayload(payload),
     });
 
+    broadcast("job-created", toJobDto(job));
     return {
         job: toJobDto(job, { includeEmployerUserId: true }),
     };
@@ -226,6 +228,7 @@ export async function updateEmployerJob(employerUserId, jobId, payload = {}) {
         throw appError("NOT_FOUND", "Job not found");
     }
 
+    broadcast("job-updated", toJobDto(job));
     return {
         job: toJobDto(job, { includeEmployerUserId: true }),
     };
@@ -239,6 +242,7 @@ export async function deleteEmployerJob(employerUserId, jobId) {
         throw appError("NOT_FOUND", "Job not found");
     }
 
+    broadcast("job-deleted", { id: toJobDto(job).id });
     return {
         deleted: true,
         job: toJobDto(job, { includeEmployerUserId: true }),
