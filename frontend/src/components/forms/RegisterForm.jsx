@@ -160,10 +160,17 @@ function RegisterForm() {
       const { data, ok } = await register(registerPayload);
 
       if (!ok) {
+        const fieldErrors = [];
+        if (data.code === "EMAIL_ALREADY_IN_USE") {
+          fieldErrors.push({ field: "Email", message: "Email is already registered" });
+        } else if (data.code === "USERNAME_ALREADY_IN_USE") {
+          fieldErrors.push({ field: "Username", message: "Username is already taken" });
+        }
+
         setStatus({
           type: "error",
-          message: data.message || "Could not create account",
-          details: Array.isArray(data.details) ? data.details : [],
+          message: fieldErrors.length > 0 ? "Please fix the highlighted errors." : (data.message || "Could not create account"),
+          details: fieldErrors.length > 0 ? fieldErrors : (Array.isArray(data.details) ? data.details : []),
         });
         return;
       }
