@@ -3,12 +3,14 @@ import {
     createJob,
     deleteJob,
     getEmployerJobs,
+    getJobApplicants,
     getAdminJobs,
     getJobById,
     getJobOptions,
     getJobs,
     streamJobs,
     updateJob,
+    addApplication,
 } from "../controllers/jobController.js";
 import { getDiscussion, addComment, updateComment, deleteComment, streamDiscussion } from "../controllers/jobDiscussionController.js";
 import { requireAuth } from "../middleware/requireAuth.js";
@@ -46,12 +48,26 @@ jobRouter.get(
     validateParams(jobParamsSchema),
     getDiscussion
 );
+jobRouter.get(
+  "/:id/applicants",
+  requireAuth,
+  requireRole("employer"),
+  validateParams(jobParamsSchema),
+  getJobApplicants
+);
+
 jobRouter.post(
     "/:id/discussion",
     requireAuth,
     validateParams(jobParamsSchema),
     validateBody(createJobDiscussionCommentSchema),
     addComment
+);
+jobRouter.post(
+    "/:id/application/:userID",
+    requireAuth,
+    // validate params
+    addApplication
 );
 jobRouter.patch(
     "/:id/discussion/:commentId",

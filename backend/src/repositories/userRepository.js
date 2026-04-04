@@ -46,6 +46,10 @@ export async function findById(userId, options = {}) {
     return query.exec();
 }
 
+export async function findUsersByIds(ids) {
+  return User.find({ _id: { $in: ids } }).lean().exec();
+}
+
 export async function listUsers(filters = {}, options = {}) {
     const query = User.find(filters);
 
