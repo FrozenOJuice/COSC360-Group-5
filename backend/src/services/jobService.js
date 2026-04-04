@@ -6,7 +6,9 @@ import {
     listDistinctJobFieldValues,
     listJobs,
     updateJobById,
+    addApplicantToJob,
 } from "../repositories/jobRepository.js";
+import { findUsersByIds } from "../repositories/userRepository.js";
 import { toJobDto } from "../dto/jobDto.js";
 import { normalizeTextSearch, toPositiveInt } from "./queryUtils.js";
 import { appError } from "../utils/appError.js";
@@ -76,6 +78,24 @@ function buildJobListResult(jobs, total, {
         },
         filters,
     };
+}
+
+export async function getJobApplicants(jobId, employerUserId) {
+  await getManagedJob(jobId, employerUserId);
+
+  const job = await findJobById(jobId);
+  if (!job.applicantIds?.length) return { applicants: [] };
+
+  const users = await findUsersByIds(job.applicantIds);  // ← was findById
+  return {
+    applicants: users.map((u) => ({
+      id: String(u._id),
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      createdAt: u.createdAt,
+    })),
+  };
 }
 
 async function listJobsForFilters(filters, normalizedFilters, options = {}, dtoOptions = {}) {
@@ -166,6 +186,23 @@ export async function getBoardJob(jobId) {
     };
 }
 
+export async function addJobApplication(jobId, userID) {
+    
+    if (!jobId || !userID) {
+        throw appError("INVALID_REQUEST", "Job id or userID is required");
+    }
+    const job = await findJobById(jobId);
+    if (!job) {
+        throw appError("NOT_FOUND", "Job not found");
+    }
+    const alreadyApplied = job.applicantIds.some((applicantId) => String(applicantId) === String(userID));
+    if (alreadyApplied) {
+        throw appError("INVALID_REQUEST", "User has already applied to this job");
+    }
+    await addApplicantToJob(jobId, userID);
+}
+
+
 function compareOptionValues(left, right) {
     return left.localeCompare(right, undefined, { sensitivity: "base" });
 }
@@ -230,6 +267,29 @@ export async function createEmployerJob(employerUserId, payload = {}) {
     return {
         job: toJobDto(job, { includeEmployerUserId: true }),
     };
+}
+
+export async function getAdminJobApplicants(jobId) {
+  if (!jobId) {
+    throw appError("INVALID_REQUEST", "Job id is required");
+  }
+
+  const job = await findJobById(jobId);
+  if (!job) {
+    throw appError("NOT_FOUND", "Job not found");
+  }
+  if (!job.applicantIds?.length) return { applicants: [] };
+
+  const users = await findUsersByIds(job.applicantIds);
+  return {
+    applicants: users.map((u) => ({
+      id: String(u._id),
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      createdAt: u.createdAt,
+    })),
+  };
 }
 
 export async function updateEmployerJob(employerUserId, role, jobId, payload = {}) {

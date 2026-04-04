@@ -1,5 +1,5 @@
 import express from "express";
-import { getUserById, getUsers, streamAdminUsers, updateUserStatus } from "../controllers/adminController.js";
+import { getUserById, getUsers, streamAdminUsers, updateUserStatus, getAdminJobApplicants } from "../controllers/adminController.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireRole } from "../middleware/requireRole.js";
 import { validateBody } from "../middleware/validateBody.js";
@@ -12,10 +12,19 @@ import {
     updateUserStatusParamsSchema,
     updateUserStatusSchema,
 } from "../validators/adminSchemas.js";
-
+import { jobParamsSchema } from "../validators/jobSchemas.js";
 const adminRouter = express.Router();
 
 adminRouter.use(requireAuth, requireRole("admin"));
+
+
+adminRouter.get(
+  "/jobs/:id/applicants",
+  requireAuth,
+  requireRole("admin"),
+  validateParams(jobParamsSchema),
+  getAdminJobApplicants
+);
 
 adminRouter.get("/users/stream", streamAdminUsers);
 adminRouter.get("/users", validateQuery(listUsersQuerySchema), getUsers);
