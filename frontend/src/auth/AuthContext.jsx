@@ -52,7 +52,6 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function login(credentials) {
-    const requestId = beginRequest();
     const result = await requestJson("/api/auth/login", {
       method: "POST",
       headers: {
@@ -63,19 +62,14 @@ export function AuthProvider({ children }) {
       fallbackMessage: "Could not log in.",
     });
 
-    if (result.ok && canCommit(requestId)) {
+    if (result.ok && isMountedRef.current) {
       setUser(result.data.user ?? null);
-    }
-
-    if (canCommit(requestId)) {
-      setLoading(false);
     }
 
     return result;
   }
 
   async function register(credentials) {
-    const requestId = beginRequest();
     const result = await requestJson("/api/auth/register", {
       method: "POST",
       headers: {
@@ -86,12 +80,8 @@ export function AuthProvider({ children }) {
       fallbackMessage: "Could not create account.",
     });
 
-    if (result.ok && canCommit(requestId)) {
+    if (result.ok && isMountedRef.current) {
       setUser(result.data.user ?? null);
-    }
-
-    if (canCommit(requestId)) {
-      setLoading(false);
     }
 
     return result;

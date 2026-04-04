@@ -125,7 +125,7 @@ function buildManagedJobPayload(payload = {}) {
     );
 }
 
-async function getManagedJob(jobId, employerUserId) {
+async function getManagedJob(jobId, employerUserId, role) {
     if (!jobId) {
         throw appError("INVALID_REQUEST", "Job id is required");
     }
@@ -139,7 +139,7 @@ async function getManagedJob(jobId, employerUserId) {
         throw appError("NOT_FOUND", "Job not found");
     }
 
-    if (String(job.employerUserId) !== String(employerUserId)) {
+    if ((String(job.employerUserId) !== String(employerUserId)) && role !== "admin") {
         throw appError("ROLE_NOT_ALLOWED", "You do not have permission to manage this job");
     }
 
@@ -204,6 +204,18 @@ export async function listEmployerJobs(employerUserId, options = {}) {
     });
 }
 
+export async function listAdminJobs(adminUserId, role, options = {}) {
+    if (!adminUserId || role !== "admin") {
+        throw appError("UNAUTHORIZED", "Not authenticated");
+    }
+
+    const { filters, normalizedFilters } = buildJobFilters(options);
+
+    return listJobsForFilters(filters, normalizedFilters, options, {
+        includeEmployerUserId: false,
+    });
+}
+
 export async function createEmployerJob(employerUserId, payload = {}) {
     if (!employerUserId) {
         throw appError("UNAUTHORIZED", "Not authenticated");
@@ -220,8 +232,8 @@ export async function createEmployerJob(employerUserId, payload = {}) {
     };
 }
 
-export async function updateEmployerJob(employerUserId, jobId, payload = {}) {
-    await getManagedJob(jobId, employerUserId);
+export async function updateEmployerJob(employerUserId, role, jobId, payload = {}) {
+    await getManagedJob(jobId, employerUserId, role);
 
     const job = await updateJobById(jobId, buildManagedJobPayload(payload));
     if (!job) {
@@ -234,8 +246,8 @@ export async function updateEmployerJob(employerUserId, jobId, payload = {}) {
     };
 }
 
-export async function deleteEmployerJob(employerUserId, jobId) {
-    await getManagedJob(jobId, employerUserId);
+export async function deleteEmployerJob(employerUserId, role, jobId) {
+    await getManagedJob(jobId, employerUserId, role);
 
     const job = await deleteJobById(jobId);
     if (!job) {

@@ -83,6 +83,10 @@
   align-items: start;
 }
 
+.employer-management-grid.employer-management-grid-single {
+  grid-template-columns: 1fr;
+}
+
 .employer-job-editor,
 .employer-job-list-shell {
   border: 1px solid #d6dfeb;

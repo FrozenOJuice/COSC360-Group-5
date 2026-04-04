@@ -247,7 +247,7 @@ function JobDetailsPage({ jobId: jobIdProp }) {
                           userName={item.userName}
                           createdDate={item.createdAt}
                           comment={item.comment}
-                          isCommentOwned={item.userId === user?.id}
+                          isCommentOwned={item.userId === user?.id || user?.role === "admin"}
                           isActionLoading={commentActionLoading}
                           onUpdate={handleUpdateComment}
                           onDelete={handleDeleteComment}

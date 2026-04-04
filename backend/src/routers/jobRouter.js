@@ -3,6 +3,7 @@ import {
     createJob,
     deleteJob,
     getEmployerJobs,
+    getAdminJobs,
     getJobById,
     getJobOptions,
     getJobs,
@@ -32,6 +33,7 @@ jobRouter.get("/", validateQuery(listJobsQuerySchema), getJobs);
 jobRouter.get("/options", getJobOptions);
 jobRouter.get("/stream", streamJobs);
 jobRouter.get("/me", requireAuth, requireRole("employer"), validateQuery(listJobsQuerySchema), getEmployerJobs);
+jobRouter.get("/admin", requireAuth, requireRole("admin"), validateQuery(listJobsQuerySchema), getAdminJobs);
 jobRouter.post("/", requireAuth, requireRole("employer"), validateBody(createJobSchema), createJob);
 jobRouter.get("/:id", validateParams(jobParamsSchema), getJobById);
 jobRouter.get(
