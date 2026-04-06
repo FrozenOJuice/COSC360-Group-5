@@ -17,6 +17,7 @@ export default defineConfig({
         target: apiProxyTarget,
         changeOrigin: true,
         secure: false,
+        ws: true,
       },
     },
   },
