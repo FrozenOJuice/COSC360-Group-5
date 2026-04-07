@@ -1,26 +1,16 @@
 services:
-  mongodb:
-    image: mongo:latest
-    volumes:
-      - mongo-data:/data/db
-
   backend:
     build: ./backend
-    depends_on:
-      - mongodb
+    ports:
+      - "3001:4000"
+    env_file:
+      - ./backend/.env
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/JobBoard
       - PORT=4000
 
   frontend:
     build: ./frontend
     ports:
-      - "4000:4000"
-    environment:
-      - VITE_PORT=4000
-      - VITE_API_PROXY_TARGET=http://backend:4000
+      - "4000:80"
     depends_on:
       - backend
-
-volumes:
-  mongo-data:
