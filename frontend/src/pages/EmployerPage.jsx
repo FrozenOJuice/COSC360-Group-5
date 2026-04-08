@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { useDebouncedQueryInput } from "../hooks/useDebouncedQueryInput";
@@ -385,8 +385,6 @@ function EmployerPage() {
       setPendingDeleteId("");
     }
   }
-  const [totalJobs, setTotalJobs] = useState(0);
-
   return (
     <main className="landing-page">
       <section className="employer-hero" id="employer">
@@ -394,8 +392,7 @@ function EmployerPage() {
           <p className="hero-eyebrow">Employer Dashboard</p>
           <h1>Manage your hiring presence from one place.</h1>
           <p className="hero-copy">
-            Create live job listings, update openings as your hiring needs
-            change, and remove filled roles without leaving the dashboard.
+            Create and manage job listings, update openings, and remove filled roles.
           </p>
 
           <div className="hero-actions">
@@ -411,18 +408,11 @@ function EmployerPage() {
         <aside className="employer-summary-panel" id="employer-company">
           <p className="employer-summary-label">Hiring Overview</p>
           <h2>{user?.name || "Employer"} listings</h2>
-          <p>
-            Manage the jobs that currently power the public board. Search and
-            edit your listings below without leaving this page.
-          </p>
+          <p>Search and manage your active job listings.</p>
           <div className="employer-summary-stats">
             <div>
-              <strong>{totalJobs}</strong>
-              <span>jobs in the current scope</span>
-            </div>
-            <div>
-              <strong>Managing</strong>
-              <span>live listings</span>
+              <strong>{result.pagination.total}</strong>
+              <span>total listings</span>
             </div>
           </div>
         </aside>

@@ -6,7 +6,7 @@ import {
     updateUserStatus,
 } from "../repositories/userRepository.js";
 import { toUserDto } from "../dto/userDto.js";
-import { normalizeTextSearch, toPositiveInt } from "./queryUtils.js";
+import { buildSearchRegex, normalizeTextSearch, toPositiveInt } from "./queryUtils.js";
 import { appError } from "../utils/appError.js";
 import { broadcastAdminUsers } from "../utils/adminEventBus.js";
 import { broadcastUserStatus } from "../utils/userEventBus.js";
@@ -26,8 +26,13 @@ function buildUserFilters(options = {}) {
     const filters = {};
     const { search, role, status } = normalizeUserFilterOptions(options);
 
-    if (search) {
-        filters.$text = { $search: search };
+    const searchRegex = buildSearchRegex(search);
+    if (searchRegex) {
+        filters.$or = [
+            { name: searchRegex },
+            { email: searchRegex },
+            { username: searchRegex },
+        ];
     }
 
     if (role) {

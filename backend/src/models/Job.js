@@ -56,17 +56,6 @@ const jobSchema = new mongoose.Schema(
     }
 );
 
-jobSchema.index(
-    { title: "text", category: "text", country: "text" },
-    {
-        name: "job_text_search",
-        weights: {
-            title: 6,
-            category: 3,
-            country: 2,
-        },
-    }
-);
 jobSchema.index({ title: 1, _id: 1 }, { name: "job_title_sort" });
 jobSchema.index({ category: 1, _id: 1 }, { name: "job_category_sort" });
 jobSchema.index({ country: 1, _id: 1 }, { name: "job_country_sort" });
