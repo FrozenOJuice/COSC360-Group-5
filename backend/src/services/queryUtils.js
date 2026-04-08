@@ -8,23 +8,11 @@ export function normalizeTextSearch(value, options = {}) {
     const maxLength = Number.isInteger(options.maxLength) && options.maxLength > 0
         ? options.maxLength
         : 80;
-    const maxTerms = Number.isInteger(options.maxTerms) && options.maxTerms > 0
-        ? options.maxTerms
-        : 6;
-    const minTermLength = Number.isInteger(options.minTermLength) && options.minTermLength > 0
-        ? options.minTermLength
-        : 2;
+    return search.slice(0, maxLength);
+}
 
-    if (!search) {
-        return "";
-    }
-
-    const normalizedSearch = search.replace(/\s+/g, " ").slice(0, maxLength);
-    const terms = normalizedSearch
-        .split(" ")
-        .map((term) => term.replace(/^[-]+/, "").replace(/["']/g, ""))
-        .filter((term) => term.length >= minTermLength)
-        .slice(0, maxTerms);
-
-    return terms.join(" ");
+export function buildSearchRegex(normalizedSearch) {
+    if (!normalizedSearch) return null;
+    const escaped = normalizedSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(escaped, "i");
 }

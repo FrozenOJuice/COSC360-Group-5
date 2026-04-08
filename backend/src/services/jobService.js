@@ -10,7 +10,7 @@ import {
 } from "../repositories/jobRepository.js";
 import { findUsersByIds } from "../repositories/userRepository.js";
 import { toJobDto } from "../dto/jobDto.js";
-import { normalizeTextSearch, toPositiveInt } from "./queryUtils.js";
+import { buildSearchRegex, normalizeTextSearch, toPositiveInt } from "./queryUtils.js";
 import { appError } from "../utils/appError.js";
 import { broadcast } from "../utils/jobEventBus.js";
 
@@ -29,8 +29,13 @@ function buildJobFilters(options = {}) {
     const filters = {};
     const { search, category, country, currency } = normalizeJobFilterOptions(options);
 
-    if (search) {
-        filters.$text = { $search: search };
+    const searchRegex = buildSearchRegex(search);
+    if (searchRegex) {
+        filters.$or = [
+            { title: searchRegex },
+            { category: searchRegex },
+            { country: searchRegex },
+        ];
     }
 
     if (category) {
