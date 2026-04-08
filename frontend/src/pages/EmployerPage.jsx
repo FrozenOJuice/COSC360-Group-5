@@ -5,7 +5,6 @@ import { useDebouncedQueryInput } from "../hooks/useDebouncedQueryInput";
 import { usePaginatedResource } from "../hooks/usePaginatedResource";
 import { useJobStream } from "../jobs/useJobStream";
 import JobListPanel from "../components/JobListPanel";
-import { useCallback } from "react";
 import {
   createEmployerJob,
   deleteEmployerJob,
