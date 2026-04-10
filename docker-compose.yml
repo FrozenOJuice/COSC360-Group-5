@@ -1,14 +1,44 @@
 services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
   backend:
     build: ./backend
-    env_file:
-      - ./backend/.env
+    platform: linux/amd64
     environment:
       - PORT=4000
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/cosc360
+      - BCRYPT_SALT_ROUNDS=10
+      - JWT_ACCESS_SECRET=cosc360-access-secret
+      - JWT_REFRESH_SECRET=cosc360-refresh-secret
+      - JWT_ACCESS_EXPIRES_IN=15m
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - ADMIN_USERNAME=admin
+      - ADMIN_EMAIL=admin@cosc360.com
+      - ADMIN_PASSWORD=AdminPass123!
+    depends_on:
+      - mongo
+    networks:
+      - app-network
 
   frontend:
     build: ./frontend
+    platform: linux/amd64
     ports:
       - "4000:80"
     depends_on:
       - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
