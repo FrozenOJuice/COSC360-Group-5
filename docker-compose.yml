@@ -1,18 +1,11 @@
 services:
-  mongo:
-    image: mongo:7
-    volumes:
-      - mongo-data:/data/db
-    networks:
-      - app-network
-
   backend:
     build: ./backend
     platform: linux/amd64
     environment:
       - PORT=4000
       - NODE_ENV=development
-      - MONGO_URI=mongodb://mongo:27017/cosc360
+      - MONGO_URI=mongodb+srv://admin_db_user:qZAR0hRa5mlLjjfh@cluster0.wmkrraq.mongodb.net/JobBoard?appName=Cluster0
       - BCRYPT_SALT_ROUNDS=10
       - JWT_ACCESS_SECRET=cosc360-access-secret
       - JWT_REFRESH_SECRET=cosc360-refresh-secret
@@ -21,8 +14,6 @@ services:
       - ADMIN_USERNAME=admin
       - ADMIN_EMAIL=admin@cosc360.com
       - ADMIN_PASSWORD=AdminPass123!
-    depends_on:
-      - mongo
     networks:
       - app-network
 
@@ -39,6 +30,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  mongo-data:
