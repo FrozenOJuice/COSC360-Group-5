@@ -36,7 +36,7 @@ function ProfileEditorFrame({
                     {isSaving ? "Saving..." : "Save Changes"}
                   </button>
                 </>
-              ) : (
+              ) : onEdit ? (
                 <button
                   type="button"
                   className="profile-button"
@@ -44,7 +44,7 @@ function ProfileEditorFrame({
                 >
                   {editLabel}
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
           {saveError ? <p className="profile-status profile-status-error">{saveError}</p> : null}
